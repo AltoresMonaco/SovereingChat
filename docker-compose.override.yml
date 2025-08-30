@@ -1,0 +1,33 @@
+version: "3.8"
+
+services:
+  # Désactiver les services packagés (on utilise tes services internes)
+  meilisearch: { profiles: ["disabled"] }
+  mongo: { profiles: ["disabled"] }
+  rag-api: { profiles: ["disabled"] }
+  pgvector: { profiles: ["disabled"] }
+  litellm: { profiles: ["disabled"] }
+
+  api:
+    environment:
+      - NODE_ENV=production
+      - CREDS_KEY=${CREDS_KEY}
+      - CREDS_IV=${CREDS_IV}
+      - MONGODB_URI=${MONGODB_URI}
+      - SEARCH=${SEARCH}
+      - MEILI_HOST=${MEILI_HOST}
+      - MEILI_MASTER_KEY=${MEILI_MASTER_KEY}
+      - MEILI_NO_ANALYTICS=${MEILI_NO_ANALYTICS}
+      - RAG_ENABLED=${RAG_ENABLED}
+      - RAG_API_URL=${RAG_API_URL}
+      - ALLOW_REGISTRATION=${ALLOW_REGISTRATION}
+      - ALLOW_EMAIL_LOGIN=${ALLOW_EMAIL_LOGIN}
+      - ALLOW_SOCIAL_LOGIN=${ALLOW_SOCIAL_LOGIN}
+      # - TEMP_CHAT_RETENTION_HOURS=${TEMP_CHAT_RETENTION_HOURS:-24}
+    depends_on: []
+    volumes:
+      - /srv/librechat-data/uploads:/app/client/public/uploads
+
+  client:
+    volumes:
+      - /srv/librechat-data/uploads:/app/client/public/uploads

@@ -138,3 +138,7 @@ helm/**/.values.yaml
 /.tabnine/
 /.codeium
 *.local.md
+
+# track deployment configs
+!librechat.yaml
+!docker-compose.override.yml
