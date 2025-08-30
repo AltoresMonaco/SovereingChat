@@ -216,7 +216,7 @@ endpoints:
   #   capabilities: ["execute_code", "file_search", "actions", "tools"]
   custom:
     - name: "Ollama"
-      apiKey: "olllama"
+      apiKey: "ollama"
       baseURL: "http://ollama:11434/v1/"
       models:
         default:
