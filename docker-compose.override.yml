@@ -1,14 +1,8 @@
 version: "3.8"
 
 services:
-  # Désactiver les services packagés (on utilise tes services internes)
-  meilisearch: { profiles: ["disabled"] }
-  mongo: { profiles: ["disabled"] }
-  rag-api: { profiles: ["disabled"] }
-  pgvector: { profiles: ["disabled"] }
-  litellm: { profiles: ["disabled"] }
-
   api:
+    user: "1000:1000"           # évite d'avoir besoin de UID/GID
     environment:
       - NODE_ENV=production
       - CREDS_KEY=${CREDS_KEY}
@@ -23,11 +17,19 @@ services:
       - ALLOW_REGISTRATION=${ALLOW_REGISTRATION}
       - ALLOW_EMAIL_LOGIN=${ALLOW_EMAIL_LOGIN}
       - ALLOW_SOCIAL_LOGIN=${ALLOW_SOCIAL_LOGIN}
-      # - TEMP_CHAT_RETENTION_HOURS=${TEMP_CHAT_RETENTION_HOURS:-24}
     depends_on: []
     volumes:
       - /srv/librechat-data/uploads:/app/client/public/uploads
 
   client:
+    user: "1000:1000"           # évite d'avoir besoin de UID/GID
+    ports:
+      - "3080:3080"             # évite d'avoir besoin de PORT
     volumes:
       - /srv/librechat-data/uploads:/app/client/public/uploads
+
+  meilisearch: { profiles: ["disabled"] }
+  mongo: { profiles: ["disabled"] }
+  rag-api: { profiles: ["disabled"] }
+  pgvector: { profiles: ["disabled"] }
+  litellm: { profiles: ["disabled"] }
