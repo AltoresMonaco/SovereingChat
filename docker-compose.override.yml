@@ -1,8 +1,8 @@
 services:
   api:
     ports:
-      - "3080:3080"         # force le port, plus de ${PORT}
-    depends_on: []          # casse la dépendance mongodb/rag_api du compose de base
+      - "3080:3080"
+    depends_on: null          # supprime totalement la dépendance du fichier de base
     user: "1000:1000"
     environment:
       - HOST=0.0.0.0
