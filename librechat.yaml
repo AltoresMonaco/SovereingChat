@@ -2,7 +2,7 @@
 # https://www.librechat.ai/docs/configuration/librechat_yaml
 
 # Configuration version (required)
-version: 1.2.1
+version: 1.2.8
 
 # Cache settings: Set to true to enable caching
 cache: true
@@ -214,28 +214,27 @@ endpoints:
   #   minRelevanceScore: 0.45
   #   # (optional) Agent Capabilities available to all users. Omit the ones you wish to exclude. Defaults to list below.
   #   capabilities: ["execute_code", "file_search", "actions", "tools"]
-  endpoints:
-    custom:
-      - name: "Ollama"
-        apiKey: "ollama"
-        baseURL: "http://ollama:11434/v1/"
-        models:
-          default:
-            - "altores-sovereign-intelligence-4B:latest"
-          fetch: false
-        titleConvo: true
-        titleModel: "current_model"
-        summarize: false
-        summaryModel: "current_model"
-        forcePrompt: false
-        modelDisplayLabel: "Ollama"
+  custom:
+    - name: "Ollama"
+      apiKey: "olllama"
+      baseURL: "http://ollama:11434/v1/"
+      models:
+        default:
+          - "altores-sovereign-intelligence-4B:latest"
+        fetch: false
+      titleConvo: true
+      titleModel: "current_model"
+      summarize: false
+      summaryModel: "current_model"
+      forcePrompt: false
+      modelDisplayLabel: "Ollama"
 
-  default:
-    endpoint: "Ollama"
-    model: "altores-sovereign-intelligence-4B:latest"
+default:
+  endpoint: "Ollama"
+  model: "altores-sovereign-intelligence-4B:latest"
 
-  mcp:
-    chatMenu: false
+mcp:
+  chatMenu: false
 
 # fileConfig:
 #   endpoints:
