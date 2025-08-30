@@ -2,8 +2,10 @@ version: "3.8"
 
 services:
   api:
-    ports: []
-    user: "1000:1000"           # évite d'avoir besoin de UID/GID
+    ports:
+      - "3080:3080"        # hardcode le port côté API (remplace ${PORT})
+    depends_on: []         # casse la dépendance mongodb/rag_api du compose de base
+    user: "1000:1000"
     environment:
       - NODE_ENV=production
       - CREDS_KEY=${CREDS_KEY}
@@ -18,14 +20,12 @@ services:
       - ALLOW_REGISTRATION=${ALLOW_REGISTRATION}
       - ALLOW_EMAIL_LOGIN=${ALLOW_EMAIL_LOGIN}
       - ALLOW_SOCIAL_LOGIN=${ALLOW_SOCIAL_LOGIN}
-    depends_on: []
     volumes:
       - /srv/librechat-data/uploads:/app/client/public/uploads
 
   client:
-    user: "1000:1000"           # évite d'avoir besoin de UID/GID
-    ports:
-      - "3080:3080"             # évite d'avoir besoin de PORT
+    user: "1000:1000"
+    ports: []               # vide pour neutraliser le mapping ${PORT} du compose de base
     volumes:
       - /srv/librechat-data/uploads:/app/client/public/uploads
 
