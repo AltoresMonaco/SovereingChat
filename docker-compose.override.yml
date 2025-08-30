@@ -17,14 +17,23 @@ services:
       - ALLOW_REGISTRATION=${ALLOW_REGISTRATION}
       - ALLOW_EMAIL_LOGIN=${ALLOW_EMAIL_LOGIN}
       - ALLOW_SOCIAL_LOGIN=${ALLOW_SOCIAL_LOGIN}
+      # Silencer les warnings du compose de base
+      - UID=1000
+      - GID=1000
     depends_on: []
     volumes:
       - /srv/librechat-data/uploads:/app/client/public/uploads
 
   client:
     user: "1000:1000"           # évite d'avoir besoin de UID/GID
-    ports:
-      - "3080:3080"             # évite d'avoir besoin de PORT
+    environment:
+      # Satisfait le docker-compose.yml d'origine qui attend ${PORT}
+      - PORT=3080
+      # Silencer les warnings
+      - UID=1000
+      - GID=1000
+    # IMPORTANT : ne pas remettre de bloc `ports:` ici,
+    # on laisse le fichier de base publier ${PORT}:3080
     volumes:
       - /srv/librechat-data/uploads:/app/client/public/uploads
 
