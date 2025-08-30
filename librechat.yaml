@@ -215,16 +215,24 @@ endpoints:
   #   # (optional) Agent Capabilities available to all users. Omit the ones you wish to exclude. Defaults to list below.
   #   capabilities: ["execute_code", "file_search", "actions", "tools"]
   endpoints:
-    ollama:
-      baseURL: "http://ollama:11434"
-      models:
-        default:
-          - "altores-sovereign-intelligence-4B"
-        fetch: false
+    custom:
+      - name: "Ollama"
+        apiKey: "ollama"            # requis mais ignoré
+        baseURL: "http://ollama:11434/v1/"   # IMPORTANT: /v1/
+        models:
+          default:
+            - "altores-sovereign-intelligence-4B:latest"
+          fetch: false
+        titleConvo: true
+        titleModel: "current_model"
+        summarize: false
+        summaryModel: "current_model"
+        forcePrompt: false
+        modelDisplayLabel: "Ollama"
 
   default:
-    endpoint: "ollama"
-    model: "altores-sovereign-intelligence-4B"
+    endpoint: "Ollama"
+    model: "altores-sovereign-intelligence-4B:latest"
 
   mcp:
     chatMenu: false
