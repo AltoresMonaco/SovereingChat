@@ -229,12 +229,6 @@ endpoints:
       forcePrompt: false
       modelDisplayLabel: "Ollama"
 
-default:
-  endpoint: "Ollama"
-  model: "altores-sovereign-intelligence-4B:latest"
-
-mcp:
-  chatMenu: false
 
 # fileConfig:
 #   endpoints:
