@@ -1,36 +1,27 @@
-version: "3.8"
-
 services:
   api:
     ports:
-      - "3080:3080"        # hardcode le port côté API (remplace ${PORT})
-    depends_on: []         # casse la dépendance mongodb/rag_api du compose de base
+      - "3080:3080"         # force le port, plus de ${PORT}
+    depends_on: []          # casse la dépendance mongodb/rag_api du compose de base
     user: "1000:1000"
     environment:
-      - NODE_ENV=production
-      - CREDS_KEY=${CREDS_KEY}
-      - CREDS_IV=${CREDS_IV}
-      - MONGODB_URI=${MONGODB_URI}
-      - SEARCH=${SEARCH}
+      - HOST=0.0.0.0
+      - MONGO_URI=${MONGO_URI}
       - MEILI_HOST=${MEILI_HOST}
-      - MEILI_MASTER_KEY=${MEILI_MASTER_KEY}
       - MEILI_NO_ANALYTICS=${MEILI_NO_ANALYTICS}
       - RAG_ENABLED=${RAG_ENABLED}
       - RAG_API_URL=${RAG_API_URL}
+      - RAG_PORT=${RAG_PORT:-8000}
+      - CREDS_KEY=${CREDS_KEY}
+      - CREDS_IV=${CREDS_IV}
+      - SEARCH=${SEARCH}
       - ALLOW_REGISTRATION=${ALLOW_REGISTRATION}
       - ALLOW_EMAIL_LOGIN=${ALLOW_EMAIL_LOGIN}
       - ALLOW_SOCIAL_LOGIN=${ALLOW_SOCIAL_LOGIN}
     volumes:
       - /srv/librechat-data/uploads:/app/client/public/uploads
 
-  client:
-    user: "1000:1000"
-    ports: []               # vide pour neutraliser le mapping ${PORT} du compose de base
-    volumes:
-      - /srv/librechat-data/uploads:/app/client/public/uploads
-
   meilisearch: { profiles: ["disabled"] }
-  mongo: { profiles: ["disabled"] }
-  rag-api: { profiles: ["disabled"] }
-  pgvector: { profiles: ["disabled"] }
-  litellm: { profiles: ["disabled"] }
+  mongodb:     { profiles: ["disabled"] }
+  rag_api:     { profiles: ["disabled"] }
+  vectordb:    { profiles: ["disabled"] }
