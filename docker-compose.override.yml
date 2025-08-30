@@ -22,15 +22,16 @@ services:
       - /srv/librechat-data/librechat-logs:/app/api/logs
   mongodb:
     image: alpine:3.19
-    command: ["sh","-c","sleep 1"]
-    restart: "no"
+    command: ["sh","-c","tail -f /dev/null"]
+    restart: always
+
   rag_api:
     image: alpine:3.19
-    command: ["sh","-c","sleep 1"]
-    depends_on: null
-    restart: "no"
+    command: ["sh","-c","tail -f /dev/null"]
+    restart: always
+
   vectordb:
     image: alpine:3.19
-    command: ["sh","-c","sleep 1"]
-    restart: "no"
+    command: ["sh","-c","tail -f /dev/null"]
+    restart: always
   meilisearch: { profiles: ["disabled"] }
