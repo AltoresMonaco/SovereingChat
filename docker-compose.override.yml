@@ -5,6 +5,7 @@ services:
     user: "1000:1000"
     environment:
       - HOST=0.0.0.0
+      - PORT=3080
       - MONGO_URI=${MONGO_URI}
       - MEILI_HOST=${MEILI_HOST}
       - MEILI_NO_ANALYTICS=${MEILI_NO_ANALYTICS}
@@ -20,6 +21,10 @@ services:
     volumes:
       - /srv/librechat-data/uploads:/app/client/public/uploads
       - /srv/librechat-data/librechat-logs:/app/api/logs
+    networks:
+      - default
+      - coolify
+
   mongodb:
     image: alpine:3.19
     command: ["sh","-c","tail -f /dev/null"]
@@ -34,4 +39,9 @@ services:
     image: alpine:3.19
     command: ["sh","-c","tail -f /dev/null"]
     restart: always
+
   meilisearch: { profiles: ["disabled"] }
+
+networks:
+  coolify:
+    external: true
