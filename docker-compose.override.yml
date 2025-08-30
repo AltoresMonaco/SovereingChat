@@ -1,9 +1,10 @@
+# /opt/apps/sovereignchat/docker-compose.override.yml
 services:
   api:
     ports:
-      - "3080:3080"
-    depends_on: null          # supprime totalement la dépendance du fichier de base
+      - "3080:3080"         # remplace ${PORT}:${PORT}
     user: "1000:1000"
+    # (on ne met PAS depends_on ici, le stub évite l'erreur du fichier base)
     environment:
       - HOST=0.0.0.0
       - MONGO_URI=${MONGO_URI}
@@ -21,7 +22,17 @@ services:
     volumes:
       - /srv/librechat-data/uploads:/app/client/public/uploads
 
+  # Stubs pour satisfaire depends_on du compose de base (ne servent pas réellement)
+  mongodb:
+    image: alpine:3.19
+    command: ["sh","-c","sleep 1"]   # démarre puis s'arrête immédiatement
+    restart: "no"
+
+  rag_api:
+    image: alpine:3.19
+    command: ["sh","-c","sleep 1"]
+    restart: "no"
+
+  # autres services packagés inutiles = disabled
   meilisearch: { profiles: ["disabled"] }
-  mongodb:     { profiles: ["disabled"] }
-  rag_api:     { profiles: ["disabled"] }
   vectordb:    { profiles: ["disabled"] }
