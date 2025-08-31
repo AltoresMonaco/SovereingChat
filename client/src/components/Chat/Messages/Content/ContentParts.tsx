@@ -30,9 +30,9 @@ type ContentPartsProps = {
   enterEdit?: (cancel?: boolean) => void | null | undefined;
   siblingIdx?: number;
   setSiblingIdx?:
-  | ((value: number) => void | React.Dispatch<React.SetStateAction<number>>)
-  | null
-  | undefined;
+    | ((value: number) => void | React.Dispatch<React.SetStateAction<number>>)
+    | null
+    | undefined;
 };
 
 const ContentParts = memo(
@@ -73,7 +73,6 @@ const ContentParts = memo(
 
       return hasThinkPart && allThinkPartsHaveContent;
     }, [content]);
-    const showReasoning = useMemo(() => showThinking && hasReasoningParts, [showThinking, hasReasoningParts]);
 
     if (!content) {
       return null;
@@ -123,7 +122,7 @@ const ContentParts = memo(
         <SearchContext.Provider value={{ searchResults }}>
           <MemoryArtifacts attachments={attachments} />
           <Sources messageId={messageId} conversationId={conversationId || undefined} />
-          {showReasoning && (
+          {hasReasoningParts && (
             <div className="mb-5">
               <ThinkingButton
                 isExpanded={isExpanded}
@@ -140,10 +139,8 @@ const ContentParts = memo(
               />
             </div>
           )}
-          {(content
+          {content
             .filter((part) => part)
-            // Hide THINK parts entirely if user setting is off
-            .filter((part) => (showThinking ? true : part?.type !== ContentTypes.THINK))
             .map((part, idx) => {
               const toolCallId =
                 (part?.[ContentTypes.TOOL_CALL] as Agents.ToolCall | undefined)?.id ?? '';
@@ -171,7 +168,7 @@ const ContentParts = memo(
                   />
                 </MessageContext.Provider>
               );
-            ))}
+            })}
         </SearchContext.Provider>
       </>
     );
