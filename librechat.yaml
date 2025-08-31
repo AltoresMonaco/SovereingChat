@@ -221,6 +221,7 @@ endpoints:
       models:
         default:
           - "altores-sovereign-intelligence-4B:latest"
+          - "lucifers/Polaris-4B-Preview.Q8_0:latest"
         fetch: false
       titleConvo: true
       titleModel: "current_model"
