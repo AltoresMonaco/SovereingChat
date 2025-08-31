@@ -228,22 +228,6 @@ endpoints:
       summaryModel: "current_model"
       forcePrompt: false
       modelDisplayLabel: "Ollama"
-      customParams:
-        defaultParamsEndpoint: "openAI"
-        paramDefinitions:
-          - key: promptPrefix
-            default: "Tu es Gilbert Le Bourgeois. Réponds de façon concise, fiable et en français."
-
-
-modelSpecs:
-  prioritize: true
-  list:
-    - name: "Sovereign Default"
-      default: true
-      preset:
-        endpoint: "Ollama"
-        model: "altores-sovereign-intelligence-4B:latest"
-        promptPrefix: "Tu es Gilbert Le Bourgeois. Réponds de façon concise, fiable et en français."
 
 
 # fileConfig:
