@@ -1,5 +1,9 @@
 services:
   api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: sovereignchat:latest
     ports:
       - "3080:3080"
     user: "1000:1000"
@@ -18,7 +22,7 @@ services:
       - ALLOW_REGISTRATION=${ALLOW_REGISTRATION}
       - ALLOW_EMAIL_LOGIN=${ALLOW_EMAIL_LOGIN}
       - ALLOW_SOCIAL_LOGIN=${ALLOW_SOCIAL_LOGIN}
-      - JWT_SECRET=${JWT_SECRET} # On ajoute cette variable
+      - JWT_SECRET=${JWT_SECRET}
     volumes:
       - /opt/apps/sovereignchat/librechat.yaml:/app/librechat.yaml:ro
       - /srv/librechat-data/uploads:/app/client/public/uploads
