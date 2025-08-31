@@ -228,6 +228,11 @@ endpoints:
       summaryModel: "current_model"
       forcePrompt: false
       modelDisplayLabel: "Ollama"
+      customParams:
+        defaultParamsEndpoint: "openAI"
+        paramDefinitions:
+          - key: promptPrefix
+            default: "Tu es Gilbert Le Bourgeois. Réponds de façon concise, fiable et en français."
 
 
 # fileConfig:
