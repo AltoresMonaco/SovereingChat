@@ -219,6 +219,7 @@ endpoints:
       displayLabel: "Altores"
       apiKey: "ollama"
       baseURL: "http://ollama:11434/v1/"
+      iconURL: "/assets/altores.svg"
       models:
         default:
           - "altores-sovereign-intelligence-4B:latest"

@@ -213,6 +213,11 @@ export const getDisplayValue = ({
       return endpoint.assistantNames[selectedValues.model];
     }
 
+    // Fallback to custom alias map for regular endpoints
+    if (endpoint.modelNames && endpoint.modelNames[selectedValues.model]) {
+      return endpoint.modelNames[selectedValues.model];
+    }
+
     return selectedValues.model;
   }
 
