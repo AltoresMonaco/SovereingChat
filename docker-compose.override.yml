@@ -29,7 +29,6 @@ services:
       - /srv/librechat-data/librechat-logs:/app/api/logs
     networks:
       - default
-      - coolify
 
   mongodb:
     image: alpine:3.19
@@ -49,5 +48,8 @@ services:
   meilisearch: { profiles: ["disabled"] }
 
 networks:
+  default:
+    external: true
+    name: coolify
   coolify:
     external: true
