@@ -219,7 +219,7 @@ endpoints:
       displayLabel: "Altores"
       apiKey: "ollama"
       baseURL: "http://ollama:11434/v1/"
-      iconURL: "./client/public/assets/altores.svg"
+      iconURL: "./client/public/assets/altores.png"
       models:
         default:
           - "altores-sovereign-intelligence-4B:latest"
@@ -230,8 +230,8 @@ endpoints:
         "altores-sovereign-intelligence-4B:latest": "Altores Sovereign Intelligence 1.0"
         "lucifers/Polaris-4B-Preview.Q8_0:latest": "Altores Sovereign Intelligence 2.0"
       modelIcons:
-        "altores-sovereign-intelligence-4B:latest": "./client/public/assets/altores.svg"
-        "lucifers/Polaris-4B-Preview.Q8_0:latest": "./client/public/assets/altores.svg"
+        "altores-sovereign-intelligence-4B:latest": "./client/public/assets/altores.png"
+        "lucifers/Polaris-4B-Preview.Q8_0:latest": "./client/public/assets/altores.png"
       titleConvo: true
       titleModel: "current_model"
       summarize: false
