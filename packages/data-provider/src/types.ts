@@ -114,15 +114,15 @@ export type TPayload = Partial<TMessage> &
 
 export type TEditedContent =
   | {
-      index: number;
-      type: ContentTypes.THINK;
-      [ContentTypes.THINK]: string;
-    }
+    index: number;
+    type: ContentTypes.THINK;
+    [ContentTypes.THINK]: string;
+  }
   | {
-      index: number;
-      type: ContentTypes.TEXT;
-      [ContentTypes.TEXT]: string;
-    };
+    index: number;
+    type: ContentTypes.TEXT;
+    [ContentTypes.TEXT]: string;
+  };
 
 export type TSubmission = {
   plugin?: TResPlugin;
@@ -338,6 +338,7 @@ export type TConfig = {
   plugins?: Record<string, string>;
   name?: string;
   iconURL?: string;
+  displayLabel?: string;
   version?: string;
   modelDisplayLabel?: string;
   userProvide?: boolean | null;
@@ -349,6 +350,8 @@ export type TConfig = {
     defaultParamsEndpoint?: string;
     paramDefinitions?: SettingDefinition[];
   };
+  modelNames?: Record<string, string>;
+  modelIcons?: Record<string, string>;
 };
 
 export type TEndpointsConfig =

@@ -171,7 +171,7 @@ const ContentParts = memo(
                   />
                 </MessageContext.Provider>
               );
-            }))
+            ))}
         </SearchContext.Provider>
       </>
     );
