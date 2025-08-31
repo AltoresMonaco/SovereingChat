@@ -292,6 +292,7 @@ export const endpointSchema = baseEndpointSchema.merge(
         EModelEndpoint,
       ).join(', ')}`,
     }),
+    displayLabel: z.string().optional(),
     apiKey: z.string(),
     baseURL: z.string(),
     models: z.object({

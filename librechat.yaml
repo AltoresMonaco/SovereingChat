@@ -216,6 +216,7 @@ endpoints:
   #   capabilities: ["execute_code", "file_search", "actions", "tools"]
   custom:
     - name: "Ollama"
+      displayLabel: "Altores"
       apiKey: "ollama"
       baseURL: "http://ollama:11434/v1/"
       models:
@@ -235,7 +236,7 @@ endpoints:
       summarize: false
       summaryModel: "current_model"
       forcePrompt: false
-      modelDisplayLabel: "Ollama"
+      modelDisplayLabel: "Altores"
 
 
 # fileConfig:

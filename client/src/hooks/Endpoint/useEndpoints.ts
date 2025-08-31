@@ -92,9 +92,12 @@ export const useEndpoints = ({
           (modelsQuery.data?.[ep]?.length ?? 0) > 0);
 
       // Base result object with formatted default icon
+      const customLabel = getEndpointField(endpointsConfig, ep, 'displayLabel') as
+        | string
+        | undefined;
       const result: Endpoint = {
         value: ep,
-        label: alternateName[ep] || ep,
+        label: customLabel || alternateName[ep] || ep,
         hasModels,
         icon: Icon
           ? React.createElement(Icon, {
