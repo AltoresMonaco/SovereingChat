@@ -30,6 +30,8 @@ export function EndpointModelItem({ modelId, endpoint, isSelected }: EndpointMod
     endpoint.assistantNames?.[modelId]
   ) {
     modelName = endpoint.assistantNames[modelId];
+  } else if (endpoint && modelId && endpoint.modelNames?.[modelId]) {
+    modelName = endpoint.modelNames[modelId];
   }
 
   return (

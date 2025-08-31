@@ -102,22 +102,24 @@ export function SearchResults({ results, localize, searchValue }: SearchResultsP
             const filteredModels = endpoint.label.toLowerCase().includes(lowerQuery)
               ? endpoint.models
               : endpoint.models.filter((model) => {
-                  let modelName = model.name;
-                  if (
-                    isAgentsEndpoint(endpoint.value) &&
-                    endpoint.agentNames &&
-                    endpoint.agentNames[model.name]
-                  ) {
-                    modelName = endpoint.agentNames[model.name];
-                  } else if (
-                    isAssistantsEndpoint(endpoint.value) &&
-                    endpoint.assistantNames &&
-                    endpoint.assistantNames[model.name]
-                  ) {
-                    modelName = endpoint.assistantNames[model.name];
-                  }
-                  return modelName.toLowerCase().includes(lowerQuery);
-                });
+                let modelName = model.name;
+                if (
+                  isAgentsEndpoint(endpoint.value) &&
+                  endpoint.agentNames &&
+                  endpoint.agentNames[model.name]
+                ) {
+                  modelName = endpoint.agentNames[model.name];
+                } else if (
+                  isAssistantsEndpoint(endpoint.value) &&
+                  endpoint.assistantNames &&
+                  endpoint.assistantNames[model.name]
+                ) {
+                  modelName = endpoint.assistantNames[model.name];
+                } else if (endpoint.modelNames && endpoint.modelNames[model.name]) {
+                  modelName = endpoint.modelNames[model.name];
+                }
+                return modelName.toLowerCase().includes(lowerQuery);
+              });
 
             if (!filteredModels.length) {
               return null; // skip if no models match
@@ -152,6 +154,8 @@ export function SearchResults({ results, localize, searchValue }: SearchResultsP
                     endpoint.assistantNames[modelId]
                   ) {
                     modelName = endpoint.assistantNames[modelId];
+                  } else if (endpoint.modelNames && endpoint.modelNames[modelId]) {
+                    modelName = endpoint.modelNames[modelId];
                   }
 
                   return (

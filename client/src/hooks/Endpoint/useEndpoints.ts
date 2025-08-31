@@ -98,11 +98,11 @@ export const useEndpoints = ({
         hasModels,
         icon: Icon
           ? React.createElement(Icon, {
-              size: 20,
-              className: 'text-text-primary shrink-0 icon-md',
-              iconURL: endpointIconURL,
-              endpoint: ep,
-            })
+            size: 20,
+            className: 'text-text-primary shrink-0 icon-md',
+            iconURL: endpointIconURL,
+            endpoint: ep,
+          })
           : null,
       };
 
@@ -173,6 +173,23 @@ export const useEndpoints = ({
           name: model,
           isGlobal: false,
         }));
+
+        // Pass through optional alias/icon maps when present in endpointsConfig
+        const aliases = getEndpointField(endpointsConfig, ep, 'modelNames') as
+          | Record<string, string>
+          | undefined;
+        const icons = getEndpointField(endpointsConfig, ep, 'modelIcons') as
+          | Record<string, string>
+          | undefined;
+        if (aliases) {
+          result.modelNames = aliases;
+        }
+        if (icons) {
+          result.modelIcons = {
+            ...(result.modelIcons ?? {}),
+            ...icons,
+          } as Record<string, string | undefined>;
+        }
       }
 
       return result;

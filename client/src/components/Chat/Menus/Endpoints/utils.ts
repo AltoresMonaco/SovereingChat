@@ -59,6 +59,14 @@ export function filterItems<
           return false;
         }
 
+        // Fallback to custom alias map for model names if provided on Endpoint
+        const endpoint = item as unknown as Endpoint;
+        if (endpoint.modelNames && endpoint.modelNames[modelId.name]) {
+          return endpoint.modelNames[modelId.name]
+            .toLowerCase()
+            .includes(searchTermLower);
+        }
+
         return false;
       });
     }

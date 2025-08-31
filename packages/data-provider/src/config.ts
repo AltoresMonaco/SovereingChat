@@ -304,6 +304,8 @@ export const endpointSchema = baseEndpointSchema.merge(
     iconURL: z.string().optional(),
     forcePrompt: z.boolean().optional(),
     modelDisplayLabel: z.string().optional(),
+    modelNames: z.record(z.string()).optional(),
+    modelIcons: z.record(z.string()).optional(),
     headers: z.record(z.any()).optional(),
     addParams: z.record(z.any()).optional(),
     dropParams: z.array(z.string()).optional(),

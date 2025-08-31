@@ -34,6 +34,8 @@ export function loadCustomEndpointsConfig(
         name: configName,
         iconURL,
         modelDisplayLabel,
+        modelNames,
+        modelIcons,
         customParams,
       } = endpoint;
       const name = normalizeEndpointName(configName);
@@ -48,6 +50,8 @@ export function loadCustomEndpointsConfig(
         customParams: customParams as TConfig['customParams'],
         modelDisplayLabel,
         iconURL,
+        modelNames,
+        modelIcons,
       };
     }
   }

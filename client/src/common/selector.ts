@@ -9,6 +9,7 @@ export interface Endpoint {
   icon: React.ReactNode;
   agentNames?: Record<string, string>;
   assistantNames?: Record<string, string>;
+  modelNames?: Record<string, string>;
   modelIcons?: Record<string, string | undefined>;
 }
 
