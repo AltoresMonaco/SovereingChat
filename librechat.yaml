@@ -228,11 +228,7 @@ endpoints:
       summaryModel: "current_model"
       forcePrompt: false
       modelDisplayLabel: "Ollama"
-      customParams:
-        defaultParamsEndpoint: "custom"   # clé présente dans paramSettings
-        paramDefinitions:
-          - key: "promptPrefix"
-            default: "Vous êtes l’assistant officiel de Monaco. Répondez en français, ton professionnel et concis."
+
 
 # fileConfig:
 #   endpoints:

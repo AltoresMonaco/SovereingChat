@@ -30,7 +30,31 @@ const Markdown = memo(({ content = '', isLatestMessage }: TContentProps) => {
     if (isInitializing) {
       return '';
     }
-    return LaTeXParsing ? preprocessLaTeX(content) : content;
+    const base = LaTeXParsing ? preprocessLaTeX(content) : content;
+    // Normalize literal `\n` to newlines outside code blocks to improve Markdown rendering
+    try {
+      const lines = base.split('\n');
+      // Quick path if there are no literal sequences
+      if (!base.includes('\\n')) {
+        return base;
+      }
+      let inFence = false;
+      const processed = lines
+        .map((line) => {
+          const fenceOpenOrClose = /^\s*```/.test(line);
+          if (fenceOpenOrClose) {
+            inFence = !inFence;
+          }
+          if (inFence) {
+            return line; // do not touch inside code fences
+          }
+          return line.replace(/\\n/g, '\n');
+        })
+        .join('\n');
+      return processed;
+    } catch {
+      return base;
+    }
   }, [content, LaTeXParsing, isInitializing]);
 
   const rehypePlugins = useMemo(

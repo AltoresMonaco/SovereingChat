@@ -28,12 +28,14 @@ const TextPart = memo(({ text, isCreatedByUser, showCursor }: TextPartProps) => 
   );
 
   const content: ContentType = useMemo(() => {
+    // Strip any stray <think>…</think> blocks that may have been merged into text
+    const sanitized = text.replace(/<think>[\s\S]*?<\/think>/g, '').trim();
     if (!isCreatedByUser) {
-      return <Markdown content={text} isLatestMessage={isLatestMessage} />;
+      return <Markdown content={sanitized} isLatestMessage={isLatestMessage} />;
     } else if (enableUserMsgMarkdown) {
-      return <MarkdownLite content={text} />;
+      return <MarkdownLite content={sanitized} />;
     } else {
-      return <>{text}</>;
+      return <>{sanitized}</>;
     }
   }, [isCreatedByUser, enableUserMsgMarkdown, text, isLatestMessage]);
 

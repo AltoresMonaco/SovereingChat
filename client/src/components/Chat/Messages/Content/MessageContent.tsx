@@ -5,6 +5,8 @@ import type { TMessage } from 'librechat-data-provider';
 import type { TMessageContentProps, TDisplayProps } from '~/common';
 import Error from '~/components/Messages/Content/Error';
 import Thinking from '~/components/Artifacts/Thinking';
+import store from '~/store';
+import { useRecoilValue } from 'recoil';
 import { useChatContext } from '~/Providers';
 import MarkdownLite from './MarkdownLite';
 import EditMessage from './EditMessage';
@@ -125,6 +127,7 @@ const MessageContent = ({
   ...props
 }: TMessageContentProps) => {
   const { message } = props;
+  const showThinking = useRecoilValue<boolean>(store.showThinking);
   const { messageId } = message;
 
   const { thinkingContent, regularContent } = useMemo(() => {
@@ -157,7 +160,7 @@ const MessageContent = ({
 
   return (
     <>
-      {thinkingContent.length > 0 && (
+      {showThinking && thinkingContent.length > 0 && (
         <Thinking key={`thinking-${messageId}`}>{thinkingContent}</Thinking>
       )}
       <DisplayMessage
