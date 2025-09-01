@@ -235,6 +235,26 @@ endpoints:
         "altores-private-intelligence-q8:latest": "/assets/altores.svg"
         "altores-sovereign-intelligence-4B:latest": "/assets/altores.svg"
         "lucifers/Polaris-4B-Preview.Q8_0:latest": "/assets/altores.svg"
+
+    - name: "MiniCPM"
+      displayLabel: "MiniCPM"
+      apiKey: "ollama"
+      baseURL: "http://ollama:11434/v1/"
+      iconURL: "/assets/altores.svg"
+      models:
+        default:
+          - "minicpm-v-4_5"
+        fetch: false
+      modelNames:
+        "minicpm-v-4_5": "MiniCPM-V 4.5 (Vision/OCR)"
+      modelIcons:
+        "minicpm-v-4_5": "/assets/altores.svg"
+      titleConvo: true
+      titleModel: "current_model"
+      summarize: false
+      summaryModel: "current_model"
+      forcePrompt: false
+      modelDisplayLabel: "MiniCPM"
       titleConvo: true
       titleModel: "current_model"
       summarize: false
