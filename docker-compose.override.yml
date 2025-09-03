@@ -25,6 +25,7 @@ services:
       - JWT_SECRET=${JWT_SECRET}
     volumes:
       - /opt/apps/sovereignchat/librechat.yaml:/app/librechat.yaml:ro
+      - /srv/librechat-data/uploads:/app/uploads
       - /srv/librechat-data/uploads:/app/client/public/uploads
       - /srv/librechat-data/librechat-logs:/app/api/logs
     networks:
