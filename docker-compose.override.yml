@@ -27,6 +27,7 @@ services:
       - /opt/apps/sovereignchat/librechat.yaml:/app/librechat.yaml:ro
       - /srv/librechat-data/uploads:/app/uploads
       - /srv/librechat-data/uploads:/app/client/public/uploads
+      - /srv/librechat-data/images:/app/client/public/images
       - /srv/librechat-data/librechat-logs:/app/api/logs
     networks:
       - default
@@ -47,6 +48,21 @@ services:
     restart: always
 
   meilisearch: { profiles: ["disabled"] }
+
+  llamacpp:
+    image: ghcr.io/ggerganov/llama.cpp:server-cublas
+    command: ["-m","/models/MiniCPM-V-4_5-Q8_0.gguf","--host","0.0.0.0","--port","8080","-c","8192","-ngl","999"]
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: [gpu]
+    volumes:
+      - /srv/librechat-data/ollama/models/minicpm:/models:ro
+    networks:
+      - default
 
 networks:
   default:

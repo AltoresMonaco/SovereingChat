@@ -239,7 +239,7 @@ endpoints:
     - name: "MiniCPM"
       displayLabel: "MiniCPM"
       apiKey: "ollama"
-      baseURL: "http://ollama:11434/v1/"
+      baseURL: "http://llamacpp:8080/v1/"
       iconURL: "/assets/altores.svg"
       models:
         default:
