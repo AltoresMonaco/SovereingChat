@@ -255,12 +255,6 @@ endpoints:
       summaryModel: "current_model"
       forcePrompt: false
       modelDisplayLabel: "MiniCPM"
-      titleConvo: true
-      titleModel: "current_model"
-      summarize: false
-      summaryModel: "current_model"
-      forcePrompt: false
-      modelDisplayLabel: "Altores"
 
 
 # fileConfig:
