@@ -243,12 +243,12 @@ endpoints:
       iconURL: "/assets/altores.svg"
       models:
         default:
-          - "minicpm-v-4_5"
+          - "minicpm-v-4_5:latest"
         fetch: false
       modelNames:
-        "minicpm-v-4_5": "MiniCPM-V 4.5 (Vision/OCR)"
+        "minicpm-v-4_5:latest": "MiniCPM-V 4.5 (Vision/OCR)"
       modelIcons:
-        "minicpm-v-4_5": "/assets/altores.svg"
+        "minicpm-v-4_5:latest": "/assets/altores.svg"
       titleConvo: true
       titleModel: "current_model"
       summarize: false
