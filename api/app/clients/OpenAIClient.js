@@ -363,6 +363,17 @@ class OpenAIClient extends BaseClient {
    * @returns {Promise<MongoFile[]>}
    */
   async addImageURLs(message, attachments) {
+    // Expand attachments: PDF->pages, video->frames, keep images
+    try {
+      const { expandAttachmentsForVision } = require('~/server/services/Files/vision/expandAttachments');
+      const expanded = await expandAttachmentsForVision(this.options.req, attachments, {
+        maxImages: this.options?.maxImages ?? 16,
+      });
+      attachments = expanded.length ? expanded : attachments;
+    } catch (e) {
+      // Fallback silently to original attachments
+    }
+
     const { files, image_urls } = await encodeAndFormat(
       this.options.req,
       attachments,
