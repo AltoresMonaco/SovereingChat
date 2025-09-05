@@ -61,17 +61,10 @@ services:
       - default
 
   llamacpp:
-    image: ghcr.io/ggerganov/llama.cpp:server-cublas
-    command: ["-m","/models/MiniCPM-V-4_5-Q8_0.gguf","--host","0.0.0.0","--port","8080","-c","8192","-ngl","999"]
-    environment:
-      - NVIDIA_VISIBLE_DEVICES=all
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - capabilities: [gpu]
+    image: ghcr.io/ggerganov/llama.cpp:server
+    command: ["-m","/models/MiniCPM-V-4_5-Q8_0.gguf","--host","0.0.0.0","--port","8080","-c","8192","-ngl","0"]
     volumes:
-      - /opt/apps:/models:ro
+      - /srv/librechat-data/ollama/models/minicpm:/models:ro
     networks:
       - default
 
