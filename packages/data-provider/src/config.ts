@@ -1109,6 +1109,7 @@ export const visionModels = [
   'claude-opus-4',
   'claude-sonnet-4',
   'claude-haiku-4',
+  'minicpm-v-4_5',
 ];
 export enum VisionModes {
   generative = 'generative',

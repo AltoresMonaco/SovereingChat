@@ -255,6 +255,8 @@ endpoints:
       summaryModel: "current_model"
       forcePrompt: false
       modelDisplayLabel: "MiniCPM"
+      visionModels:
+        - "minicpm-v-4_5:latest"
 
 
 fileConfig:
