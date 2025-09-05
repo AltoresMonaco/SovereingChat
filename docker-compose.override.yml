@@ -58,6 +58,22 @@ services:
     networks:
       - default
 
+  minicpm:
+    image: openmmlab/lmdeploy:latest
+    restart: always
+    command: ["bash","-lc","MODEL_DIR=/models/minicpm-v-4_5; if [ -d \"$MODEL_DIR\" ]; then echo 'Starting LMDeploy with model at' $MODEL_DIR; lmdeploy serve api_server $MODEL_DIR --server-port 8000 --api-keys dummy --backend turbomind; else echo 'Model missing at' $MODEL_DIR '— place FP16 weights there to stay 0‑egress'; sleep infinity; fi"]
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    volumes:
+      - /srv/librechat-data/minicpm:/models:ro
+    networks:
+      - default
+
   llamacpp:
     image: ghcr.io/ggerganov/llama.cpp:server
     command: ["-m","/models/MiniCPM-V-4_5-Q8_0.gguf","--host","0.0.0.0","--port","8080","-c","8192","-ngl","0"]

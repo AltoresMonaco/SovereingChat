@@ -182,11 +182,16 @@ actions:
 #       - -y
 #       - "mcp-obsidian"
 #       - /path/to/obsidian/vault
+interface:
+  agents: true
+  privacyPolicy: false
+  TermsOfService: false
+  
 
 # Definition of custom endpoints
 endpoints:
-  # assistants:
-  #   disableBuilder: false # Disable Assistants Builder Interface by setting to `true`
+  assistants:
+      disableBuilder: false # Disable Assistants Builder Interface by setting to `true`
   #   pollIntervalMs: 3000  # Polling interval for checking assistant updates
   #   timeoutMs: 180000  # Timeout for assistant operations
   #   # Should only be one or the other, either `supportedIds` or `excludedIds`
@@ -225,16 +230,18 @@ endpoints:
           - "altores-private-intelligence-q8:latest"
           - "altores-sovereign-intelligence-4B:latest"
           - "lucifers/Polaris-4B-Preview.Q8_0:latest"
+          - "llava:latest"
         fetch: false
       # Optional: Friendly names and icons for model IDs
       modelNames:
-        "altores-private-intelligence-q8:latest": "Altores Private Intelligence 3.0"
-        "altores-sovereign-intelligence-4B:latest": "Altores Sovereign Intelligence 1.0"
-        "lucifers/Polaris-4B-Preview.Q8_0:latest": "Altores Sovereign Intelligence 2.0"
+        "altores-private-intelligence-q8:latest": "Altores Sovereign Intelligence 2.0"
+        "lucifers/Polaris-4B-Preview.Q8_0:latest": "Altores Sovereign Intelligence Reasoning 1.0"
+        "llava:latest": "Vision (LLaVA)"
       modelIcons:
         "altores-private-intelligence-q8:latest": "/assets/altores.svg"
-        "altores-sovereign-intelligence-4B:latest": "/assets/altores.svg"
         "lucifers/Polaris-4B-Preview.Q8_0:latest": "/assets/altores.svg"
+      visionModels:
+        - "llava:latest"
 
     - name: "MiniCPM"
       displayLabel: "MiniCPM"
@@ -255,6 +262,27 @@ endpoints:
       summaryModel: "current_model"
       forcePrompt: false
       modelDisplayLabel: "MiniCPM"
+      # vision disabled for llama.cpp backend (text-only)
+
+    - name: "MiniCPMVision"
+      displayLabel: "MiniCPM (Vision/OCR)"
+      apiKey: "ollama"
+      baseURL: "http://minicpm:8000/v1/"
+      iconURL: "/assets/altores.svg"
+      models:
+        default:
+          - "minicpm-v-4_5:latest"
+        fetch: false
+      modelNames:
+        "minicpm-v-4_5:latest": "MiniCPM-V 4.5 (Vision/OCR)"
+      modelIcons:
+        "minicpm-v-4_5:latest": "/assets/altores.svg"
+      titleConvo: true
+      titleModel: "current_model"
+      summarize: false
+      summaryModel: "current_model"
+      forcePrompt: false
+      modelDisplayLabel: "MiniCPM Vision"
       visionModels:
         - "minicpm-v-4_5:latest"
 
@@ -293,4 +321,4 @@ fileConfig:
 
 # Memory configuration for user memories
 memory:
-  disabled: true
+  disabled: false
