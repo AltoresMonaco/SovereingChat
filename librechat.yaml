@@ -184,6 +184,7 @@ endpoints:
         "llava:latest": "/assets/altores.svg"
       visionModels:
         - "llava:latest"
+        - "gemma3:4b"
 
     - name: "MiniCPM"
       displayLabel: "MiniCPM"
