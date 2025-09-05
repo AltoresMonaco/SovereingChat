@@ -53,8 +53,6 @@ services:
   ollama:
     image: ollama/ollama:latest
     restart: always
-    ports:
-      - "11434:11434"
     volumes:
       - /srv/librechat-data/ollama:/root/.ollama
     networks:
