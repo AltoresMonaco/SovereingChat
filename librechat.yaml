@@ -182,26 +182,6 @@ actions:
 #       - -y
 #       - "mcp-obsidian"
 #       - /path/to/obsidian/vault
-interface:
-  
-  privacyPolicy: false
-  TermsOfService: false
-  modelSelect: true
-  parameters: true
-  sidePanel: true
-  presets: true
-  prompts: true
-  bookmarks: true
-  multiConvo: true
-  agents: true
-  customWelcome: "Salut {{user.name}}! Bienvenue sur Altores Sovereign Intelligence!"
-  runCode: false
-  webSearch: false
-  fileSearch: true
-  fileCitations: true
-
-
-  
 
 # Definition of custom endpoints
 endpoints:
