@@ -27,8 +27,6 @@ cache: true
 
 # Custom interface configuration
 interface:
-  privacyPolicy: false
-  TermsOfService: false
   modelSelect: true
   parameters: true
   sidePanel: true
