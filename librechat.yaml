@@ -129,6 +129,8 @@ actions:
 endpoints:
   assistants:
       disableBuilder: false # Disable Assistants Builder Interface by setting to `true`
+  agents:
+      disableBuilder: false # Enable Agents Builder Interface
   #   pollIntervalMs: 3000  # Polling interval for checking assistant updates
   #   timeoutMs: 180000  # Timeout for assistant operations
   #   # Should only be one or the other, either `supportedIds` or `excludedIds`
