@@ -25,6 +25,7 @@ import EventQCM from './EventQCM';
 import EventActivation from './EventActivation';
 import AdminEvent from './AdminEvent';
 import OrgEvent from './OrgEvent';
+import EventSignupCode from './EventSignupCode';
 
 const AuthLayout = () => (
   <AuthContextProvider>
@@ -135,6 +136,10 @@ export const router = createBrowserRouter(
             {
               path: 'event/activation/:token',
               element: <EventActivation />,
+            },
+            {
+              path: 'signup/code',
+              element: <EventSignupCode />,
             },
             {
               path: 'admin/event',

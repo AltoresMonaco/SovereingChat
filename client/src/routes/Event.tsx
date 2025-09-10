@@ -5,13 +5,11 @@ export default function EventRoute() {
     const [params] = useSearchParams();
     const navigate = useNavigate();
     const token = params.get('token');
-    const [progress, setProgress] = useState<{ stands_scanned: string[]; count: number; required: number } | null>(null);
+    const [progress, setProgress] = useState<{ stands_scanned: string[]; count: number; required: number; eligible?: boolean } | null>(null);
     const [already, setAlready] = useState(false);
     const [completed, setCompleted] = useState(false);
     const [form, setForm] = useState({ email: '', company: '', seats: 1, consentTransactional: true, consentMarketing: false });
-    const [voucherType, setVoucherType] = useState<'personal' | 'org'>('personal');
-    const [allowedDomains, setAllowedDomains] = useState<string>('');
-    const [activationURL, setActivationURL] = useState<string | null>(null);
+    const [code, setCode] = useState<string | null>(null);
     const [status, setStatus] = useState<string | null>(null);
 
     useEffect(() => {
@@ -37,8 +35,24 @@ export default function EventRoute() {
         return () => { ignore = true; };
     }, [token]);
 
+    useEffect(() => {
+        let ignore = false;
+        (async () => {
+            try {
+                const res = await fetch('/api/event/progress');
+                const data = await res.json();
+                if (!ignore && res.ok) setProgress(data);
+            } catch { }
+        })();
+        return () => { ignore = true; };
+    }, []);
+
     const onSubmit = async (e: any) => {
         e.preventDefault();
+        if (!progress?.eligible) {
+            setStatus('Complétez 2/2 ou passez le QCM avant de continuer.');
+            return;
+        }
         try {
             const res = await fetch('/api/event/lead', {
                 method: 'POST',
@@ -53,8 +67,7 @@ export default function EventRoute() {
             });
             const data = await res.json();
             if (res.ok) {
-                setStatus('Lead saved');
-                if (data.activation_url) setActivationURL(data.activation_url);
+                setStatus('Coordonnées enregistrées. Vous pouvez demander votre code.');
             } else {
                 setStatus(data?.error || 'Invalid form');
             }
@@ -63,25 +76,23 @@ export default function EventRoute() {
         }
     };
 
-    const onIssueVoucher = async () => {
+    const onIssueCode = async () => {
         try {
-            const payload: any = { type: voucherType };
-            if (voucherType === 'org') {
-                payload.allowed_domains = allowedDomains
-                    .split(',')
-                    .map((d) => d.trim())
-                    .filter(Boolean);
+            if (!form.email) {
+                setStatus('Renseignez votre e‑mail.');
+                return;
             }
-            const res = await fetch('/api/event/issue-voucher', {
+            const res = await fetch('/api/event/issue-code', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload),
+                body: JSON.stringify({ email: form.email }),
             });
             const data = await res.json();
             if (res.ok) {
-                setStatus(`Voucher créé: ${data.voucher_id}`);
+                setStatus("Code délivré");
+                if (data.code) setCode(data.code);
             } else {
-                setStatus(data?.error || 'Issue voucher failed');
+                setStatus(data?.error || 'Issue code failed');
             }
         } catch (_) {
             setStatus('Network error');
@@ -89,22 +100,25 @@ export default function EventRoute() {
     };
 
     return (
-        <div style={{ maxWidth: 560, margin: '32px auto', padding: 16 }}>
-            <h2>Event Access</h2>
+        <div className="mx-auto my-8 w-full max-w-xl rounded-md border border-border-subtle bg-surface-primary p-6 text-text-primary">
+            <h2 className="mb-4 text-2xl font-semibold">Accès Événement</h2>
             {status && <div style={{ color: 'crimson', marginBottom: 12 }}>{status}</div>}
             {progress && (
-                <div style={{ marginBottom: 16 }}>
-                    <div>Progress: {progress.count}/{progress.required}</div>
-                    <div>Scanned: {progress.stands_scanned.join(', ') || '-'}</div>
-                    {already && <div>(Already scanned this stand)</div>}
-                    {completed && <div>Completed! Please fill the form below.</div>}
+                <div className="mb-4 text-sm">
+                    <div>Progression: {progress.count}/{progress.required}</div>
+                    <div>Stands scannés: {progress.stands_scanned.join(', ') || '-'}</div>
+                    {progress.eligible ? (
+                        <div className="text-green-600">Éligible — vous pouvez obtenir votre code.</div>
+                    ) : (
+                        <div className="text-text-secondary">Scannez les deux stands ou passez le QCM.</div>
+                    )}
                 </div>
             )}
             <div style={{ marginBottom: 16 }}>
                 <Link to="/event/qcm">Passer le QCM (substitution)</Link>
             </div>
 
-            <form onSubmit={onSubmit} style={{ display: 'grid', gap: 8 }}>
+            <form onSubmit={onSubmit} className="grid gap-3">
                 <label>
                     Email
                     <input type="email" required value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
@@ -123,33 +137,15 @@ export default function EventRoute() {
                 <label>
                     <input type="checkbox" checked={form.consentMarketing} onChange={(e) => setForm({ ...form, consentMarketing: e.target.checked })} /> Marketing consent (optional)
                 </label>
-                <button type="submit">Submit</button>
+                <button type="submit" disabled={!progress?.eligible}>Enregistrer mes infos</button>
             </form>
-            <div style={{ marginTop: 12 }}>
-                {activationURL && (
-                    <div>
-                        Lien d'activation: <code>{activationURL}</code>
+            <div className="mt-4 border-t border-border-subtle pt-4">
+                <button type="button" onClick={onIssueCode} disabled={!progress?.eligible || !form.email}>Recevoir mon code</button>
+                {code && (
+                    <div className="mt-2 text-sm">
+                        Votre code: <code>{code}</code> — utilisez‑le sur la page d’inscription.
                     </div>
                 )}
-            </div>
-
-            <hr style={{ margin: '16px 0' }} />
-            <div style={{ display: 'grid', gap: 8 }}>
-                <div style={{ fontWeight: 600 }}>Émettre un voucher</div>
-                <label>
-                    Type
-                    <select value={voucherType} onChange={(e) => setVoucherType(e.target.value as any)}>
-                        <option value="personal">Personnel</option>
-                        <option value="org">Organisation</option>
-                    </select>
-                </label>
-                {voucherType === 'org' && (
-                    <label>
-                        Domaines autorisés (séparés par des virgules)
-                        <input type="text" value={allowedDomains} onChange={(e) => setAllowedDomains(e.target.value)} placeholder="ex: exemple.mc, exemple.com" />
-                    </label>
-                )}
-                <button type="button" onClick={onIssueVoucher}>Émettre</button>
             </div>
         </div>
     );
