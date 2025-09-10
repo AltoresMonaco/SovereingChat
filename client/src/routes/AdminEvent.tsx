@@ -11,6 +11,8 @@ export default function AdminEvent() {
     const [extendDays, setExtendDays] = useState<number>(14);
     const [maxSeats, setMaxSeats] = useState<number>(5);
     const [voucherId, setVoucherId] = useState('');
+    const [qrType, setQrType] = useState<'dynamic' | 'static'>('dynamic');
+    const [lastToken, setLastToken] = useState<string | null>(null);
 
     const load = async () => {
         try {
@@ -74,12 +76,14 @@ export default function AdminEvent() {
             const res = await fetch('/api/admin/event/issue-qr', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ stand }),
+                body: JSON.stringify({ stand, type: qrType }),
             });
             const data = await res.json();
             if (res.ok) {
-                navigator.clipboard?.writeText(`${window.location.origin}/event?token=${data.token}`);
-                setStatus(`QR token issued for stand ${stand} (URL copied)`);
+                const url = `${window.location.origin}/event?token=${data.token}`;
+                setLastToken(url);
+                navigator.clipboard?.writeText(url).catch(() => { });
+                setStatus(`QR ${qrType} issued for stand ${stand} (URL copied)`);
             } else {
                 setStatus(data?.error || 'Issue QR failed');
             }
@@ -105,10 +109,22 @@ export default function AdminEvent() {
 
             <div style={{ display: 'grid', gap: 8, marginBottom: 16 }}>
                 <div style={{ fontWeight: 600 }}>Issue QR</div>
+                <label>
+                    Type
+                    <select value={qrType} onChange={(e) => setQrType(e.target.value as any)}>
+                        <option value="dynamic">Dynamic</option>
+                        <option value="static">Static (imprimable)</option>
+                    </select>
+                </label>
                 <div style={{ display: 'flex', gap: 8 }}>
                     <button onClick={() => onIssueQR('A')}>Stand A</button>
                     <button onClick={() => onIssueQR('B')}>Stand B</button>
                 </div>
+                {lastToken && (
+                    <div style={{ fontSize: 12 }}>
+                        Dernier lien: <code>{lastToken}</code>
+                    </div>
+                )}
             </div>
 
             <div style={{ display: 'grid', gap: 8, marginBottom: 16 }}>
