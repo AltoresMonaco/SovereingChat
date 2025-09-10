@@ -53,6 +53,20 @@ export default function EventRoute() {
             setStatus('Complétez 2/2 ou passez le QCM avant de continuer.');
             return;
         }
+        // basic front validation
+        const emailOk = /.+@.+\..+/.test(form.email);
+        if (!emailOk) {
+            setStatus('E‑mail invalide.');
+            return;
+        }
+        if (!form.company?.trim()) {
+            setStatus('Renseignez votre entreprise.');
+            return;
+        }
+        if (form.seats < 1 || form.seats > 10) {
+            setStatus('Nombre de sièges doit être entre 1 et 10.');
+            return;
+        }
         try {
             const res = await fetch('/api/event/lead', {
                 method: 'POST',
@@ -144,6 +158,9 @@ export default function EventRoute() {
                 {code && (
                     <div className="mt-2 text-sm">
                         Votre code: <code>{code}</code> — utilisez‑le sur la page d’inscription.
+                        <div className="mt-1">
+                            <Link to="/signup/code">Aller à la page d’inscription</Link>
+                        </div>
                     </div>
                 )}
             </div>
