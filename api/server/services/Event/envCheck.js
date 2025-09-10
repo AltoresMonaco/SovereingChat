@@ -15,6 +15,9 @@ function checkEventEnv() {
     LITELLM_ENABLED,
     LITELLM_BASE_URL,
     LITELLM_ADMIN_KEY,
+    EVENT_QR_STATIC,
+    EVENT_CODE_LENGTH,
+    EVENT_CODE_TTL_MINUTES,
   } = process.env ?? {};
 
   const recs = [
@@ -43,6 +46,16 @@ function checkEventEnv() {
     if (!LITELLM_BASE_URL || !LITELLM_ADMIN_KEY) {
       logger.warn('[EventEnv] LiteLLM is enabled but missing LITELLM_BASE_URL or LITELLM_ADMIN_KEY');
     }
+  }
+
+  if (EVENT_QR_STATIC === 'true') {
+    logger.info('[EventEnv] EVENT_QR_STATIC enabled: static printed QR codes allowed');
+  }
+  if (!EVENT_CODE_LENGTH) {
+    logger.warn('[EventEnv] EVENT_CODE_LENGTH not set; defaulting to 6');
+  }
+  if (!EVENT_CODE_TTL_MINUTES) {
+    logger.warn('[EventEnv] EVENT_CODE_TTL_MINUTES not set; defaulting to 30');
   }
 }
 

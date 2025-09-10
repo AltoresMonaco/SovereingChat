@@ -77,6 +77,52 @@ router.post('/2fa/backup/regenerate', middleware.requireJwtAuth, regenerateBacku
 
 router.get('/graph-token', middleware.requireJwtAuth, graphTokenController);
 
+/** Validate event code: activates a personal seat */
+router.post('/validate-code', async (req, res) => {
+  try {
+    const { email, code } = req.body || {};
+    if (!email || !code) return res.status(400).json({ error: 'Missing email or code' });
+    const { EventSeat, EventVoucher, EventLead } = require('~/db/models');
+    const crypto = require('node:crypto');
+    const hash = crypto.createHash('sha256').update(code).digest('hex');
+    const lead = await EventLead.findOne({ email }).lean();
+    if (!lead || lead.validation_code_hash !== hash) return res.status(400).json({ error: 'Invalid code' });
+
+    // Create a personal voucher on the fly (single seat) for this email
+    const voucher_id = `EVT_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+    const models = [];
+    await EventVoucher.create({
+      voucher_id,
+      org_id: voucher_id,
+      allowed_domains: [],
+      max_seats: 1,
+      redemptions_count: 0,
+      models_allowlist: models,
+      org_daily_token_cap: Number(process.env.EVENT_ORG_DAILY_TOKEN_CAP || 1000000),
+      expires_at: null,
+      status: 'active',
+    });
+
+    const userId = req.user?.id || req.user?._id || null;
+    await EventSeat.create({
+      seat_id: `${voucher_id}_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+      voucher_id,
+      user_id: userId,
+      email,
+      activated_at: new Date(),
+      status: 'active',
+      user_daily_caps: {
+        msgs: Number(process.env.EVENT_USER_DAILY_MSG_CAP || 200),
+        tokens: Number(process.env.EVENT_USER_DAILY_TOKEN_CAP || 100000),
+      },
+    });
+
+    await EventLead.updateOne({ email }, { $set: { validated: true, validation_code_hash: null } });
+    return res.status(200).json({ activated: true });
+  } catch (err) {
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
 /**
  * Redeem voucher seat: binds a seat to a user/email with domain and cap checks
  * in: { voucher_id, email }

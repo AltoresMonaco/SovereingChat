@@ -1,7 +1,8 @@
 const express = require('express');
 const { EventStamp, EventLead, EventVoucher } = require('~/db/models');
 const { logMetric } = require('~/server/services/Event/metrics');
-const { verifyQrToken, getOrCreateEventSessionId, getStampExpiryDate } = require('~/server/services/Event/qrTokens');
+const { verifyQrTokenAllowStatic, getOrCreateEventSessionId, getStampExpiryDate } = require('~/server/services/Event/qrTokens');
+const { QcmAttempt } = require('~/db/models');
 const {
   signActivationToken,
   verifyActivationToken,
@@ -14,6 +15,7 @@ const stampLimiter = createIpLimiter(40, 1);
 const leadLimiter = createIpLimiter(20, 1);
 const qcmLimiter = createIpLimiter(5, 1);
 const { getQuestions, submitAnswers } = require('~/server/services/Event/qcm');
+const crypto = require('node:crypto');
 
 // Public endpoints (no auth)
 router.post('/stamp', stampLimiter, async (req, res) => {
@@ -25,7 +27,7 @@ router.post('/stamp', stampLimiter, async (req, res) => {
 
     let payload;
     try {
-      payload = verifyQrToken(token);
+      payload = verifyQrTokenAllowStatic(token);
     } catch (err) {
       return res.status(400).json({ error: 'Invalid or expired token' });
     }
@@ -67,6 +69,21 @@ router.post('/stamp', stampLimiter, async (req, res) => {
   }
 });
 
+router.get('/progress', async (req, res) => {
+  try {
+    const session_id = getOrCreateEventSessionId(req, res);
+    const stamps = await EventStamp.find({ session_id }).select('stand').lean();
+    const stands_scanned = [...new Set(stamps.map((s) => s.stand))];
+    const count = stands_scanned.length;
+    const required = 2;
+    const qcm = await QcmAttempt.findOne({ session_id }).select('passed').lean();
+    const eligible = count >= required || !!qcm?.passed;
+    return res.status(200).json({ stands_scanned, count, required, eligible });
+  } catch (err) {
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 router.post('/lead', leadLimiter, async (req, res) => {
   try {
     const { email, company, seats_requested, consent_transactional, consent_marketing } = req.body || {};
@@ -83,6 +100,11 @@ router.post('/lead', leadLimiter, async (req, res) => {
     const stamps = await EventStamp.find({ session_id }).select('stand').lean();
     const stands_scanned = [...new Set(stamps.map((s) => s.stand))];
     const stamps_completed = stands_scanned.length >= 2;
+    const qcm = await QcmAttempt.findOne({ session_id }).select('passed').lean();
+    const eligible = stamps_completed || !!qcm?.passed;
+    if (!eligible) {
+      return res.status(403).json({ error: 'Not eligible yet (need 2/2 or QCM pass)' });
+    }
 
     const expires_at = getActivationExpiryDate();
     const token = signActivationToken({ lead_id: 'pending', email });
@@ -113,11 +135,49 @@ router.post('/lead', leadLimiter, async (req, res) => {
   }
 });
 
+/** Issue validation code (screen fallback) */
+const issueCodeLimiter = createIpLimiter(5, 1);
+router.post('/issue-code', issueCodeLimiter, async (req, res) => {
+  try {
+    const session_id = getOrCreateEventSessionId(req, res);
+    const stamps = await EventStamp.find({ session_id }).select('stand').lean();
+    const stands_scanned = [...new Set(stamps.map((s) => s.stand))];
+    const qcm = await QcmAttempt.findOne({ session_id }).select('passed').lean();
+    const eligible = stands_scanned.length >= 2 || !!qcm?.passed;
+    if (!eligible) {
+      return res.status(403).json({ error: 'Not eligible yet' });
+    }
+
+    const { email } = req.body || {};
+    if (!email) return res.status(400).json({ error: 'Missing email' });
+
+    const codeLength = parseInt(process.env.EVENT_CODE_LENGTH || '6', 10);
+    const rawCode = (Math.random().toString().slice(2) + Date.now()).slice(0, Math.max(4, codeLength));
+    const hash = crypto.createHash('sha256').update(rawCode).digest('hex');
+
+    const lead = await EventLead.findOneAndUpdate(
+      { email },
+      { $set: { validation_code_hash: hash, validation_sent_at: new Date() } },
+      { new: true },
+    );
+    if (!lead) return res.status(404).json({ error: 'Lead not found for email' });
+
+    await logMetric('code_issued', { email });
+    // Fallback: screen delivery (zéro‑egress)
+    return res.status(200).json({ delivered: 'screen', code: rawCode });
+  } catch (err) {
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 router.post('/issue-voucher', async (req, res) => {
   try {
     const { type, allowed_domains = [], max_seats } = req.body || {};
     if (!type || (type === 'org' && (!Array.isArray(allowed_domains) || allowed_domains.length === 0))) {
       return res.status(400).json({ error: 'Invalid voucher parameters' });
+    }
+    if (process.env.NODE_ENV === 'production') {
+      return res.status(403).json({ error: 'Not allowed here. Use /api/admin/event endpoints.' });
     }
     const voucher_id = `EVT_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
     const voucher = await EventVoucher.create({

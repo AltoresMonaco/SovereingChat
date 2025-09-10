@@ -33,6 +33,9 @@ const EventLeadSchema = new Schema(
     voucher_id: { type: String, default: null },
     status: { type: String, enum: ['pending', 'sent', 'activated'], default: 'pending' },
     expires_at: { type: Date, required: true },
+    validation_code_hash: { type: String, default: null },
+    validation_sent_at: { type: Date, default: null },
+    validated: { type: Boolean, default: false },
   },
   { collection: 'event_leads', timestamps: true },
 );
@@ -152,6 +155,7 @@ const QcmAttemptSchema = new Schema(
     attempts_count: { type: Number, required: true, default: 0 },
     last_attempt_at: { type: Date, default: null },
     cooldown_until: { type: Date, default: null },
+    passed: { type: Boolean, default: false },
   },
   { collection: 'event_qcm_attempts', timestamps: true },
 );

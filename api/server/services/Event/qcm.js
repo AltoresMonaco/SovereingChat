@@ -72,6 +72,7 @@ async function submitAnswers(req, res) {
   if (!passed && attempt.attempts_count >= MAX_ATTEMPTS) {
     attempt.cooldown_until = new Date(now.getTime() + COOLDOWN_MINUTES * 60 * 1000);
   }
+  if (passed) attempt.passed = true;
   await attempt.save();
 
   await logMetric('qcm_attempt', { session_id, passed, correct, total: answers.length });

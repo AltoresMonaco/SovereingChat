@@ -27,7 +27,24 @@ function signQrToken({ stand, nonce }) {
  * Verifies a QR token and returns its payload if valid.
  */
 function verifyQrToken(token) {
-  return jwt.verify(token, getJwtSecret());
+  const payload = jwt.verify(token, getJwtSecret());
+  return payload;
+}
+
+/**
+ * Verify static token: allow tokens without exp when EVENT_QR_STATIC=true.
+ */
+function verifyQrTokenAllowStatic(token) {
+  try {
+    return verifyQrToken(token);
+  } catch (err) {
+    if (process.env.EVENT_QR_STATIC === 'true' && err?.name === 'TokenExpiredError') {
+      // If static mode, accept expired token by decoding without verification of exp
+      const payload = jwt.decode(token);
+      if (payload?.stand) return payload;
+    }
+    throw err;
+  }
 }
 
 /**
@@ -65,6 +82,7 @@ function getStampExpiryDate() {
 module.exports = {
   signQrToken,
   verifyQrToken,
+  verifyQrTokenAllowStatic,
   getOrCreateEventSessionId,
   getStampExpiryDate,
 };
