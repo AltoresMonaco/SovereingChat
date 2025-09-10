@@ -24,6 +24,14 @@ function signQrToken({ stand, nonce }) {
 }
 
 /**
+ * Signs a static QR token (no short-lived exp) for printed codes.
+ */
+function signStaticQrToken({ stand, nonce }) {
+  const nowSec = Math.floor(Date.now() / 1000);
+  return jwt.sign({ stand, nonce, iat: nowSec }, getJwtSecret());
+}
+
+/**
  * Verifies a QR token and returns its payload if valid.
  */
 function verifyQrToken(token) {
@@ -81,6 +89,7 @@ function getStampExpiryDate() {
 
 module.exports = {
   signQrToken,
+  signStaticQrToken,
   verifyQrToken,
   verifyQrTokenAllowStatic,
   getOrCreateEventSessionId,

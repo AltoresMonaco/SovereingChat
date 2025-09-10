@@ -10,7 +10,7 @@ const { EventVoucher, EventSeat, EventLead, UsageRollupDaily } = require('~/db/m
 const { revokeKey } = require('~/server/services/LiteLLM/client');
 const { logMetric } = require('~/server/services/Event/metrics');
 const { requireJwtAuth, checkAdmin } = require('~/server/middleware');
-const { signQrToken } = require('~/server/services/Event/qrTokens');
+const { signQrToken, signStaticQrToken } = require('~/server/services/Event/qrTokens');
 
 const router = express.Router();
 router.use(requireJwtAuth);
@@ -139,9 +139,13 @@ router.get('/analytics', async (req, res) => {
 
 router.post('/issue-qr', async (req, res) => {
   try {
-    const { stand } = req.body || {};
+    const { stand, type: bodyType } = req.body || {};
+    const type = bodyType || req.query?.type;
     if (!['A', 'B'].includes(stand)) return res.status(400).json({ error: 'Invalid stand' });
-    const token = signQrToken({ stand, nonce: `${stand}_${Date.now()}` });
+    const useStatic = type === 'static' || process.env.EVENT_QR_STATIC === 'true';
+    const token = useStatic
+      ? signStaticQrToken({ stand, nonce: `${stand}_${Date.now()}` })
+      : signQrToken({ stand, nonce: `${stand}_${Date.now()}` });
     return res.status(200).json({ token });
   } catch (err) {
     return res.status(500).json({ error: 'Internal server error' });

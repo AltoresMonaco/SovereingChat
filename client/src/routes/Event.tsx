@@ -9,6 +9,7 @@ export default function EventRoute() {
     const [already, setAlready] = useState(false);
     const [completed, setCompleted] = useState(false);
     const [form, setForm] = useState({ email: '', company: '', seats: 1, consentTransactional: true, consentMarketing: false });
+    const [visitorType, setVisitorType] = useState<'individual' | 'org'>('individual');
     const [code, setCode] = useState<string | null>(null);
     const [status, setStatus] = useState<string | null>(null);
 
@@ -132,6 +133,16 @@ export default function EventRoute() {
                 <Link to="/event/qcm">Passer le QCM (substitution)</Link>
             </div>
 
+            <div className="mb-2 text-sm">Vous êtes&nbsp;:</div>
+            <div className="mb-4 flex gap-4 text-sm">
+                <label className="flex items-center gap-2">
+                    <input type="radio" name="visitorType" checked={visitorType === 'individual'} onChange={() => setVisitorType('individual')} /> Particulier
+                </label>
+                <label className="flex items-center gap-2">
+                    <input type="radio" name="visitorType" checked={visitorType === 'org'} onChange={() => setVisitorType('org')} /> Entreprise
+                </label>
+            </div>
+
             <form onSubmit={onSubmit} className="grid gap-3">
                 <label>
                     Email
@@ -141,10 +152,12 @@ export default function EventRoute() {
                     Company
                     <input type="text" required value={form.company} onChange={(e) => setForm({ ...form, company: e.target.value })} />
                 </label>
-                <label>
-                    Seats
-                    <input type="number" min={1} max={10} value={form.seats} onChange={(e) => setForm({ ...form, seats: Number(e.target.value) })} />
-                </label>
+                {visitorType === 'org' && (
+                    <label>
+                        Sièges (1..5)
+                        <input type="number" min={1} max={5} value={form.seats} onChange={(e) => setForm({ ...form, seats: Number(e.target.value) })} />
+                    </label>
+                )}
                 <label>
                     <input type="checkbox" checked={form.consentTransactional} onChange={(e) => setForm({ ...form, consentTransactional: e.target.checked })} /> Transactional consent
                 </label>
@@ -153,17 +166,47 @@ export default function EventRoute() {
                 </label>
                 <button type="submit" disabled={!progress?.eligible}>Enregistrer mes infos</button>
             </form>
-            <div className="mt-4 border-t border-border-subtle pt-4">
-                <button type="button" onClick={onIssueCode} disabled={!progress?.eligible || !form.email}>Recevoir mon code</button>
-                {code && (
-                    <div className="mt-2 text-sm">
-                        Votre code: <code>{code}</code> — utilisez‑le sur la page d’inscription.
-                        <div className="mt-1">
-                            <Link to="/signup/code">Aller à la page d’inscription</Link>
+            {visitorType === 'individual' ? (
+                <div className="mt-4 border-t border-border-subtle pt-4">
+                    <button type="button" onClick={onIssueCode} disabled={!progress?.eligible || !form.email}>Recevoir mon code</button>
+                    {code && (
+                        <div className="mt-2 text-sm">
+                            Votre code: <code>{code}</code> — utilisez‑le sur la page d’inscription.
+                            <div className="mt-1">
+                                <Link to="/signup/code">Aller à la page d’inscription</Link>
+                            </div>
                         </div>
-                    </div>
-                )}
-            </div>
+                    )}
+                </div>
+            ) : (
+                <div className="mt-4 border-t border-border-subtle pt-4">
+                    <OrgVoucherRequest email={form.email} seats={form.seats} eligible={!!progress?.eligible} />
+                </div>
+            )}
+        </div>
+    );
+}
+
+function OrgVoucherRequest({ email, seats, eligible }: { email: string; seats: number; eligible: boolean }) {
+    const [status, setStatus] = useState<string | null>(null);
+    const [result, setResult] = useState<{ voucher_id: string; max_seats: number } | null>(null);
+    const onRequest = async () => {
+        try {
+            if (!eligible) { setStatus('Complétez 2/2 ou QCM.'); return; }
+            const res = await fetch('/api/event/request-org-voucher', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, seats })
+            });
+            const data = await res.json();
+            if (res.ok) { setResult({ voucher_id: data.voucher_id, max_seats: data.max_seats }); setStatus('Voucher org créé.'); }
+            else setStatus(data?.error || 'Échec de la demande');
+        } catch { setStatus('Network error'); }
+    };
+    return (
+        <div className="grid gap-2 text-sm">
+            <div>Demande d’accès organisation (e‑mail pro requis, sièges ≤ 5).</div>
+            <button type="button" onClick={onRequest} disabled={!eligible || !email}>Demander mon voucher org</button>
+            {status && <div>{status}</div>}
+            {result && <div>Voucher: <code>{result.voucher_id}</code> · seats: {result.max_seats}</div>}
         </div>
     );
 }

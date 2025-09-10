@@ -3,6 +3,8 @@ const { EventStamp, EventLead, EventVoucher } = require('~/db/models');
 const { logMetric } = require('~/server/services/Event/metrics');
 const { verifyQrTokenAllowStatic, getOrCreateEventSessionId, getStampExpiryDate } = require('~/server/services/Event/qrTokens');
 const { QcmAttempt } = require('~/db/models');
+const { isEmailDomainAllowed } = require('~/server/services/domains');
+const { getAppConfig } = require('~/server/services/Config');
 const {
   signActivationToken,
   verifyActivationToken,
@@ -155,16 +157,65 @@ router.post('/issue-code', issueCodeLimiter, async (req, res) => {
     const rawCode = (Math.random().toString().slice(2) + Date.now()).slice(0, Math.max(4, codeLength));
     const hash = crypto.createHash('sha256').update(rawCode).digest('hex');
 
-    const lead = await EventLead.findOneAndUpdate(
-      { email },
-      { $set: { validation_code_hash: hash, validation_sent_at: new Date() } },
-      { new: true },
-    );
+    const today = new Date(); today.setHours(0,0,0,0);
+    const now = new Date();
+
+    let lead = await EventLead.findOne({ email });
+    if (!lead) return res.status(404).json({ error: 'Lead not found for email' });
+    // Per-email/day limit: 3/day
+    if (lead.code_issue_date && lead.code_issue_date >= today && (lead.code_issue_count || 0) >= 3) {
+      return res.status(429).json({ error: 'Daily limit reached for code issuance' });
+    }
+    const update = {
+      validation_code_hash: hash,
+      validation_sent_at: now,
+      code_issue_date: today,
+      code_issue_count: (lead.code_issue_date && lead.code_issue_date >= today ? (lead.code_issue_count || 0) + 1 : 1),
+    };
+    lead = await EventLead.findOneAndUpdate({ email }, { $set: update }, { new: true });
     if (!lead) return res.status(404).json({ error: 'Lead not found for email' });
 
     await logMetric('code_issued', { email });
     // Fallback: screen delivery (zéro‑egress)
     return res.status(200).json({ delivered: 'screen', code: rawCode });
+  } catch (err) {
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+/** Request an org voucher after eligibility (seats <= cap, domain must be pro if BLOCK_WEBMAILS=true) */
+router.post('/request-org-voucher', async (req, res) => {
+  try {
+    const session_id = getOrCreateEventSessionId(req, res);
+    const stamps = await EventStamp.find({ session_id }).select('stand').lean();
+    const stands_scanned = [...new Set(stamps.map((s) => s.stand))];
+    const qcm = await QcmAttempt.findOne({ session_id }).select('passed').lean();
+    const eligible = stands_scanned.length >= 2 || !!qcm?.passed;
+    if (!eligible) return res.status(403).json({ error: 'Not eligible yet' });
+
+    const { email, seats } = req.body || {};
+    if (!email) return res.status(400).json({ error: 'Missing email' });
+    const domain = (email.split('@')[1] || '').toLowerCase();
+    if (process.env.BLOCK_WEBMAILS === 'true') {
+      const appConfig = await getAppConfig();
+      const allowed = isEmailDomainAllowed(email, appConfig?.registration?.allowedDomains);
+      if (!allowed) return res.status(403).json({ error: 'Email domain not allowed' });
+    }
+
+    const reqSeats = Math.max(1, Math.min(Number(seats || 1), Number(process.env.EVENT_MAX_SEATS_ABSOLUTE || 10), Number(process.env.EVENT_DEFAULT_MAX_SEATS || 5)));
+    const voucher_id = `EVT_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+    await EventVoucher.create({
+      voucher_id,
+      org_id: voucher_id,
+      allowed_domains: [domain],
+      max_seats: reqSeats,
+      redemptions_count: 0,
+      models_allowlist: [],
+      org_daily_token_cap: Number(process.env.EVENT_ORG_DAILY_TOKEN_CAP || 1000000),
+      expires_at: null,
+      status: 'active',
+    });
+    return res.status(200).json({ voucher_id, allowed_domains: [domain], max_seats: reqSeats });
   } catch (err) {
     return res.status(500).json({ error: 'Internal server error' });
   }

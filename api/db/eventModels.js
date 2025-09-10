@@ -36,6 +36,8 @@ const EventLeadSchema = new Schema(
     validation_code_hash: { type: String, default: null },
     validation_sent_at: { type: Date, default: null },
     validated: { type: Boolean, default: false },
+    code_issue_count: { type: Number, default: 0 },
+    code_issue_date: { type: Date, default: null },
   },
   { collection: 'event_leads', timestamps: true },
 );

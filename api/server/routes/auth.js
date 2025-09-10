@@ -87,6 +87,10 @@ router.post('/validate-code', async (req, res) => {
     const hash = crypto.createHash('sha256').update(code).digest('hex');
     const lead = await EventLead.findOne({ email }).lean();
     if (!lead || lead.validation_code_hash !== hash) return res.status(400).json({ error: 'Invalid code' });
+    if (lead.validated) return res.status(400).json({ error: 'Code already used' });
+    const ttlMin = Math.max(parseInt(process.env.EVENT_CODE_TTL_MINUTES || '30', 10), 1);
+    const expired = lead.validation_sent_at && (Date.now() - new Date(lead.validation_sent_at).getTime()) > ttlMin * 60 * 1000;
+    if (expired) return res.status(400).json({ error: 'Code expired' });
 
     // Create a personal voucher on the fly (single seat) for this email
     const voucher_id = `EVT_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
