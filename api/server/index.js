@@ -8,7 +8,6 @@ const express = require('express');
 const passport = require('passport');
 const compression = require('compression');
 const cookieParser = require('cookie-parser');
-const helmet = require('helmet');
 const { logger } = require('@librechat/data-schemas');
 const mongoSanitize = require('express-mongo-sanitize');
 const { isEnabled, ErrorController } = require('@librechat/api');
@@ -78,20 +77,7 @@ const startServer = async () => {
   if (process.env.ENABLE_STRICT_CSP === 'true') {
     app.use(strictCSP());
   }
-  app.use(
-    helmet.contentSecurityPolicy({
-      useDefaults: true,
-      directives: {
-        "default-src": ["'self'"],
-        "img-src": ["'self'", 'data:'],
-        "script-src": ["'self'"],
-        "style-src": ["'self'", "'unsafe-inline'"],
-        "connect-src": ["'self'"],
-        "font-src": ["'self'", 'data:'],
-        "frame-ancestors": ["'none'"],
-      },
-    }),
-  );
+  // Optional strict CSP is handled by our own middleware when ENABLE_STRICT_CSP=true
   app.use(express.json({ limit: '3mb' }));
   app.use(express.urlencoded({ extended: true, limit: '3mb' }));
   app.use(mongoSanitize());
