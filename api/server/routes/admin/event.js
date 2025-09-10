@@ -9,12 +9,12 @@ function toCSV(rows, fields) {
 const { EventVoucher, EventSeat, EventLead, UsageRollupDaily } = require('~/db/models');
 const { revokeKey } = require('~/server/services/LiteLLM/client');
 const { logMetric } = require('~/server/services/Event/metrics');
-const { requireJwtAuth, requireAdmin } = require('~/server/middleware');
+const { requireJwtAuth, checkAdmin } = require('~/server/middleware');
 const { signQrToken } = require('~/server/services/Event/qrTokens');
 
 const router = express.Router();
 router.use(requireJwtAuth);
-router.use(requireAdmin);
+router.use(checkAdmin);
 
 router.post('/voucher', async (req, res) => {
   try {
