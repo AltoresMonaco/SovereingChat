@@ -1,5 +1,11 @@
 const express = require('express');
-const { Parser } = require('json2csv');
+// Lightweight CSV generator (avoid external dependency in container)
+function toCSV(rows, fields) {
+  const esc = (v) => (v == null ? '' : String(v).replace(/"/g, '""'));
+  const header = fields.join(',');
+  const lines = rows.map((row) => fields.map((f) => `"${esc(row[f])}"`).join(','));
+  return [header, ...lines].join('\n');
+}
 const { EventVoucher, EventSeat, EventLead, UsageRollupDaily } = require('~/db/models');
 const { revokeKey } = require('~/server/services/LiteLLM/client');
 const { logMetric } = require('~/server/services/Event/metrics');
@@ -99,8 +105,7 @@ router.post('/export-leads', async (req, res) => {
   try {
     const leads = await EventLead.find({}).lean();
     const fields = ['email', 'company', 'seats_requested', 'activation_url', 'voucher_id', 'expires_at'];
-    const parser = new Parser({ fields });
-    const csv = parser.parse(leads);
+    const csv = toCSV(leads, fields);
     res.setHeader('Content-Type', 'text/csv');
     res.setHeader('Content-Disposition', 'attachment; filename="leads.csv"');
     return res.status(200).send(csv);
