@@ -1,6 +1,7 @@
 const { handleError } = require('@librechat/api');
 const { ViolationTypes } = require('librechat-data-provider');
 const { getModelsConfig } = require('~/server/controllers/ModelController');
+const { EventSeat, EventVoucher } = require('~/db/models');
 const { logViolation } = require('~/cache');
 /**
  * Validates the model of the request.
@@ -28,6 +29,22 @@ const validateModel = async (req, res, next) => {
   }
 
   let validModel = !!availableModels.find((availableModel) => availableModel === model);
+
+  // Enforce models_allowlist for event seats/org vouchers, if present
+  try {
+    const userId = req.user?.id || req.user?._id;
+    if (userId) {
+      const seat = await EventSeat.findOne({ user_id: userId, status: 'active' }).select('voucher_id').lean();
+      if (seat?.voucher_id) {
+        const voucher = await EventVoucher.findOne({ voucher_id: seat.voucher_id })
+          .select('models_allowlist')
+          .lean();
+        if (Array.isArray(voucher?.models_allowlist) && voucher.models_allowlist.length) {
+          validModel = validModel && voucher.models_allowlist.includes(model);
+        }
+      }
+    }
+  } catch (_) {}
 
   if (validModel) {
     return next();

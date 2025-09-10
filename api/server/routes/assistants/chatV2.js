@@ -11,6 +11,8 @@ const {
 const validateConvoAccess = require('~/server/middleware/validate/convoAccess');
 const validateAssistant = require('~/server/middleware/assistants/validate');
 const chatController = require('~/server/controllers/assistants/chatV2');
+const userDailyCaps = require('~/server/middleware/userDailyCaps');
+const orgFrozenEnforcer = require('~/server/middleware/orgFrozenEnforcer');
 
 router.post('/abort', handleAbort());
 
@@ -24,6 +26,8 @@ router.post('/abort', handleAbort());
  */
 router.post(
   '/',
+  userDailyCaps(),
+  orgFrozenEnforcer(),
   validateModel,
   buildEndpointOption,
   validateAssistant,

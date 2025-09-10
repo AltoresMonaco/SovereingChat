@@ -5,6 +5,7 @@ import Avatar from './Avatar';
 import EnableTwoFactorItem from './TwoFactorAuthentication';
 import BackupCodesItem from './BackupCodesItem';
 import { useAuthContext } from '~/hooks';
+import EventUsage from './EventUsage';
 
 function Account() {
   const { user } = useAuthContext();
@@ -31,6 +32,9 @@ function Account() {
       )}
       <div className="pb-3">
         <DeleteAccount />
+      </div>
+      <div className="pb-3">
+        <EventUsage />
       </div>
     </div>
   );

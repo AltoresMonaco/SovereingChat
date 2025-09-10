@@ -8,6 +8,7 @@ const express = require('express');
 const passport = require('passport');
 const compression = require('compression');
 const cookieParser = require('cookie-parser');
+const helmet = require('helmet');
 const { logger } = require('@librechat/data-schemas');
 const mongoSanitize = require('express-mongo-sanitize');
 const { isEnabled, ErrorController } = require('@librechat/api');
@@ -17,10 +18,13 @@ const { jwtLogin, ldapLogin, passportLogin } = require('~/strategies');
 const { updateInterfacePermissions } = require('~/models/interface');
 const { checkMigrations } = require('./services/start/migration');
 const initializeMCPs = require('./services/initializeMCPs');
+const { startOrgCapJob } = require('./services/Event/orgCapJob');
+const { checkEventEnv } = require('./services/Event/envCheck');
 const configureSocialLogins = require('./socialLogins');
 const { getAppConfig } = require('./services/Config');
 const staticCache = require('./utils/staticCache');
 const noIndex = require('./middleware/noIndex');
+const strictCSP = require('./middleware/strictCSP');
 const { seedDatabase } = require('~/models');
 const routes = require('./routes');
 
@@ -71,6 +75,23 @@ const startServer = async () => {
 
   /* Middleware */
   app.use(noIndex);
+  if (process.env.ENABLE_STRICT_CSP === 'true') {
+    app.use(strictCSP());
+  }
+  app.use(
+    helmet.contentSecurityPolicy({
+      useDefaults: true,
+      directives: {
+        "default-src": ["'self'"],
+        "img-src": ["'self'", 'data:'],
+        "script-src": ["'self'"],
+        "style-src": ["'self'", "'unsafe-inline'"],
+        "connect-src": ["'self'"],
+        "font-src": ["'self'", 'data:'],
+        "frame-ancestors": ["'none'"],
+      },
+    }),
+  );
   app.use(express.json({ limit: '3mb' }));
   app.use(express.urlencoded({ extended: true, limit: '3mb' }));
   app.use(mongoSanitize());
@@ -136,6 +157,11 @@ const startServer = async () => {
 
   app.use('/api/tags', routes.tags);
   app.use('/api/mcp', routes.mcp);
+  if (process.env.EVENT_ENABLED === 'true') {
+    checkEventEnv();
+    app.use('/api/event', routes.event);
+    app.use('/api/admin/event', routes.adminEvent);
+  }
 
   app.use(ErrorController);
 
@@ -164,6 +190,9 @@ const startServer = async () => {
     }
 
     initializeMCPs().then(() => checkMigrations());
+    if (process.env.EVENT_ENABLED === 'true') {
+      startOrgCapJob();
+    }
   });
 };
 

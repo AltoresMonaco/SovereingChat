@@ -1,6 +1,6 @@
 const createTTSLimiters = require('./ttsLimiters');
 const createSTTLimiters = require('./sttLimiters');
-
+const rateLimit = require('express-rate-limit');
 const loginLimiter = require('./loginLimiter');
 const importLimiters = require('./importLimiters');
 const uploadLimiters = require('./uploadLimiters');
@@ -23,4 +23,6 @@ module.exports = {
   createSTTLimiters,
   verifyEmailLimiter,
   resetPasswordLimiter,
+  createIpLimiter: (max, windowMinutes) =>
+    rateLimit({ windowMs: windowMinutes * 60 * 1000, max, standardHeaders: true, legacyHeaders: false }),
 };

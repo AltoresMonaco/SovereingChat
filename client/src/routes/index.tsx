@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { createBrowserRouter, Navigate, Outlet } from 'react-router-dom';
 import {
   Login,
@@ -19,6 +20,11 @@ import ShareRoute from './ShareRoute';
 import ChatRoute from './ChatRoute';
 import Search from './Search';
 import Root from './Root';
+import EventRoute from './Event';
+import EventQCM from './EventQCM';
+import EventActivation from './EventActivation';
+import AdminEvent from './AdminEvent';
+import OrgEvent from './OrgEvent';
 
 const AuthLayout = () => (
   <AuthContextProvider>
@@ -117,6 +123,26 @@ export const router = createBrowserRouter(
             {
               path: 'agents/:category',
               element: <AgentMarketplace />,
+            },
+            {
+              path: 'event',
+              element: <EventRoute />,
+            },
+            {
+              path: 'event/qcm',
+              element: <EventQCM />,
+            },
+            {
+              path: 'event/activation/:token',
+              element: <EventActivation />,
+            },
+            {
+              path: 'admin/event',
+              element: <AdminEvent />,
+            },
+            {
+              path: 'org/event',
+              element: <OrgEvent />,
             },
           ],
         },

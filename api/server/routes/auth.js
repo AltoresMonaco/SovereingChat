@@ -19,7 +19,12 @@ const { logoutController } = require('~/server/controllers/auth/LogoutController
 const { loginController } = require('~/server/controllers/auth/LoginController');
 const { getAppConfig } = require('~/server/services/Config');
 const middleware = require('~/server/middleware');
-const { Balance } = require('~/db/models');
+const { Balance, EventSeat, EventVoucher, RedemptionLog } = require('~/db/models');
+const { logMetric } = require('~/server/services/Event/metrics');
+const { isEmailDomainAllowed } = require('~/server/services/domains');
+const { createKey } = require('~/server/services/LiteLLM/client');
+const { provisionUserKey } = require('~/server/services/LiteLLM/provision');
+const { isWebmail } = require('~/server/services/emailValidation');
 
 const setBalanceConfig = createSetBalanceConfig({
   getAppConfig,
@@ -71,5 +76,104 @@ router.post('/2fa/disable', middleware.requireJwtAuth, disable2FA);
 router.post('/2fa/backup/regenerate', middleware.requireJwtAuth, regenerateBackupCodes);
 
 router.get('/graph-token', middleware.requireJwtAuth, graphTokenController);
+
+/**
+ * Redeem voucher seat: binds a seat to a user/email with domain and cap checks
+ * in: { voucher_id, email }
+ */
+router.post('/redeem', middleware.loginLimiter, middleware.logHeaders, middleware.requireJwtAuth, async (req, res) => {
+  try {
+    const { voucher_id, email } = req.body || {};
+    const userId = req.user?.id;
+    if (!voucher_id || !email || !userId) {
+      return res.status(400).json({ error: 'Missing voucher_id or email' });
+    }
+
+    if (process.env.BLOCK_WEBMAILS === 'true' && isWebmail(email)) {
+      await RedemptionLog.create({ voucher_id: voucher_id || null, user_id: userId, email, result: 'domain_blocked' });
+      return res.status(403).json({ error: 'Webmail addresses are not allowed' });
+    }
+
+    const voucher = await EventVoucher.findOne({ voucher_id }).lean();
+    if (!voucher) {
+      return res.status(404).json({ error: 'Voucher not found' });
+    }
+    if (voucher.status !== 'active') {
+      await RedemptionLog.create({ voucher_id, user_id: userId, email, result: 'frozen' });
+      return res.status(400).json({ error: 'Voucher not active' });
+    }
+    if (voucher.expires_at && new Date(voucher.expires_at) < new Date()) {
+      await RedemptionLog.create({ voucher_id, user_id: userId, email, result: 'expired' });
+      return res.status(400).json({ error: 'Voucher expired' });
+    }
+
+    const appConfig = await getAppConfig({ role: req.user.role });
+    const domainAllowed = voucher.allowed_domains?.some((d) => email.toLowerCase().endsWith(`@${d.toLowerCase()}`));
+    const globalAllowed = isEmailDomainAllowed(email, appConfig?.registration?.allowedDomains);
+    if (!domainAllowed || !globalAllowed) {
+      await RedemptionLog.create({ voucher_id, user_id: userId, email, result: 'domain_blocked' });
+      return res.status(403).json({ error: 'Email domain not allowed' });
+    }
+
+    const activeSeatCount = await EventSeat.countDocuments({ voucher_id, status: 'active' });
+    if (voucher.max_seats && activeSeatCount >= voucher.max_seats) {
+      await RedemptionLog.create({ voucher_id, user_id: userId, email, result: 'cap_reached' });
+      return res.status(400).json({ error: 'Seat cap reached' });
+    }
+
+    const existingActiveForEmail = await EventSeat.findOne({ voucher_id, email, status: 'active' });
+    if (existingActiveForEmail) {
+      await RedemptionLog.create({ voucher_id, user_id: userId, email, result: 'duplicate' });
+      return res.status(409).json({ error: 'Seat already active for this email' });
+    }
+
+    const seat = await EventSeat.create({
+      seat_id: `${voucher_id}_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+      voucher_id,
+      user_id: userId,
+      email,
+      activated_at: new Date(),
+      status: 'active',
+      user_daily_caps: {
+        msgs: Number(process.env.EVENT_USER_DAILY_MSG_CAP || 200),
+        tokens: Number(process.env.EVENT_USER_DAILY_TOKEN_CAP || 100000),
+      },
+    });
+
+    // Provision LiteLLM key (best-effort)
+    try {
+      const key = await createKey({
+        userId,
+        orgId: voucher.org_id,
+        voucherId: voucher_id,
+        dailyMsgCap: seat.user_daily_caps.msgs,
+        dailyTokenCap: seat.user_daily_caps.tokens,
+        models: voucher.models_allowlist,
+      });
+      if (key?.key_id) {
+        await EventSeat.updateOne({ seat_id: seat.seat_id }, { $set: { litellm_key_id: key.key_id } });
+      }
+    } catch (_) {}
+
+    await EventVoucher.updateOne({ voucher_id }, { $inc: { redemptions_count: 1 } });
+    await RedemptionLog.create({ voucher_id, user_id: userId, email, result: 'ok' });
+    await logMetric('seat_activated', { voucher_id, user_id: userId, email });
+    // LiteLLM provisioning (stubbed/gated)
+    try {
+      const dailyMsgCap = seat.user_daily_caps?.msgs;
+      const dailyTokenCap = seat.user_daily_caps?.tokens;
+      await provisionUserKey({
+        userId,
+        voucher_id,
+        org_id: voucher.org_id,
+        dailyMsgCap,
+        dailyTokenCap,
+      });
+    } catch (_) {}
+    return res.status(200).json({ seat_id: seat.seat_id, voucher_id });
+  } catch (err) {
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
 
 module.exports = router;

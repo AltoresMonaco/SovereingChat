@@ -1,0 +1,102 @@
+[
+    {
+        "id": "q1",
+        "q": "Qui est François Grimaldi?",
+        "choices": [
+            "Un navigateur",
+            "Le fondateur de la dynastie Grimaldi",
+            "Un peintre"
+        ],
+        "answer": 1
+    },
+    {
+        "id": "q2",
+        "q": "Quelle princesse américaine a épousé Rainier III?",
+        "choices": [
+            "Grace Kelly",
+            "Audrey Hepburn",
+            "Marilyn Monroe"
+        ],
+        "answer": 0
+    },
+    {
+        "id": "q3",
+        "q": "Quel est le souverain actuel de Monaco?",
+        "choices": [
+            "Albert II",
+            "Rainier IV",
+            "Jacques I"
+        ],
+        "answer": 0
+    },
+    {
+        "id": "q4",
+        "q": "Monaco est surtout connu pour:",
+        "choices": [
+            "Son volcan actif",
+            "Son Grand Prix de F1",
+            "Sa muraille"
+        ],
+        "answer": 1
+    },
+    {
+        "id": "q5",
+        "q": "Quelle mer borde Monaco?",
+        "choices": [
+            "Mer Noire",
+            "Mer Adriatique",
+            "Mer Méditerranée"
+        ],
+        "answer": 2
+    },
+    {
+        "id": "q6",
+        "q": "Quel quartier abrite le Palais princier?",
+        "choices": [
+            "Monte‑Carlo",
+            "La Condamine",
+            "Le Rocher"
+        ],
+        "answer": 2
+    },
+    {
+        "id": "q7",
+        "q": "Quel musée océanographique est à Monaco?",
+        "choices": [
+            "Cousteau",
+            "Calypso",
+            "Océanographique de Monaco"
+        ],
+        "answer": 2
+    },
+    {
+        "id": "q8",
+        "q": "Quelle superficie approx. pour Monaco?",
+        "choices": [
+            "2 km²",
+            "20 km²",
+            "200 km²"
+        ],
+        "answer": 0
+    },
+    {
+        "id": "q9",
+        "q": "Couleur du drapeau monégasque?",
+        "choices": [
+            "Bleu‑blanc",
+            "Rouge‑blanc",
+            "Vert‑blanc"
+        ],
+        "answer": 1
+    },
+    {
+        "id": "q10",
+        "q": "Quelle activité majeure?",
+        "choices": [
+            "Pêche",
+            "Finance & tourisme",
+            "Agriculture"
+        ],
+        "answer": 1
+    }
+]
