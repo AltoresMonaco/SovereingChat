@@ -79,15 +79,19 @@ async function submitAnswers(req, res) {
 
   // Substitution logic: if passed and only 1 stand missing, mark the missing stand via a synthetic stamp
   if (passed) {
-    const stamps = await EventStamp.find({ session_id }).select('stand').lean();
-    const scanned = new Set(stamps.map((s) => s.stand));
-    if (!scanned.has('A') || !scanned.has('B')) {
-      const missing = !scanned.has('A') ? 'A' : 'B';
-      await EventStamp.updateOne(
-        { session_id, stand: missing },
-        { $setOnInsert: { session_id, stand: missing, source: 'qcm', issued_at: now, expires_at: now, nonce: `qcm_${session_id}` } },
-        { upsert: true },
-      );
+    // Allow QCM to substitute at most ONE stand in total for this session
+    const existingQcmSubstitution = await EventStamp.findOne({ session_id, source: 'qcm' }).lean();
+    if (!existingQcmSubstitution) {
+      const stamps = await EventStamp.find({ session_id }).select('stand').lean();
+      const scanned = new Set(stamps.map((s) => s.stand));
+      if (!scanned.has('A') || !scanned.has('B')) {
+        const missing = !scanned.has('A') ? 'A' : 'B';
+        await EventStamp.updateOne(
+          { session_id, stand: missing },
+          { $setOnInsert: { session_id, stand: missing, source: 'qcm', issued_at: now, expires_at: now, nonce: `qcm_${session_id}` } },
+          { upsert: true },
+        );
+      }
     }
   }
 

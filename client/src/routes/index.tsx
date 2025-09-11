@@ -23,9 +23,9 @@ import Root from './Root';
 import EventRoute from './Event';
 import EventQCM from './EventQCM';
 import EventActivation from './EventActivation';
-import AdminEvent from './AdminEvent';
-import OrgEvent from './OrgEvent';
-import EventSignupCode from './EventSignupCode';
+// import AdminEvent from './AdminEvent';
+// import OrgEvent from './OrgEvent';
+// import EventSignupCode from './EventSignupCode';
 
 const AuthLayout = () => (
   <AuthContextProvider>
@@ -137,18 +137,7 @@ export const router = createBrowserRouter(
               path: 'event/activation/:token',
               element: <EventActivation />,
             },
-            {
-              path: 'signup/code',
-              element: <EventSignupCode />,
-            },
-            {
-              path: 'admin/event',
-              element: <AdminEvent />,
-            },
-            {
-              path: 'org/event',
-              element: <OrgEvent />,
-            },
+            // Removed per alignment: code field belongs in /register, and admin/org pages not public
           ],
         },
       ],

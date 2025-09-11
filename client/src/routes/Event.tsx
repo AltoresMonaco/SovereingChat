@@ -12,6 +12,7 @@ export default function EventRoute() {
     const [visitorType, setVisitorType] = useState<'individual' | 'org'>('individual');
     const [code, setCode] = useState<string | null>(null);
     const [status, setStatus] = useState<string | null>(null);
+    const [leadSaved, setLeadSaved] = useState<boolean>(false);
 
     useEffect(() => {
         let ignore = false;
@@ -82,6 +83,7 @@ export default function EventRoute() {
             });
             const data = await res.json();
             if (res.ok) {
+                setLeadSaved(true);
                 setStatus('Coordonnées enregistrées. Vous pouvez demander votre code.');
             } else {
                 setStatus(data?.error || 'Invalid form');
@@ -93,6 +95,10 @@ export default function EventRoute() {
 
     const onIssueCode = async () => {
         try {
+            if (!leadSaved) {
+                setStatus('Enregistrez d’abord vos informations.');
+                return;
+            }
             if (!form.email) {
                 setStatus('Renseignez votre e‑mail.');
                 return;
@@ -168,12 +174,12 @@ export default function EventRoute() {
             </form>
             {visitorType === 'individual' ? (
                 <div className="mt-4 border-t border-border-subtle pt-4">
-                    <button type="button" onClick={onIssueCode} disabled={!progress?.eligible || !form.email}>Recevoir mon code</button>
+                    <button type="button" onClick={onIssueCode} disabled={!progress?.eligible || !form.email || !leadSaved}>Recevoir mon code</button>
                     {code && (
                         <div className="mt-2 text-sm">
                             Votre code: <code>{code}</code> — utilisez‑le sur la page d’inscription.
                             <div className="mt-1">
-                                <Link to="/signup/code">Aller à la page d’inscription</Link>
+                                <Link to="/register">Aller à la page d’inscription</Link>
                             </div>
                         </div>
                     )}

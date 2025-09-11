@@ -31,6 +31,12 @@ const Registration: React.FC = () => {
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
   const token = queryParams.get('token');
+  // Event alignment: optional code field to validate event code before creating account
+  const validationCode = queryParams.get('code') || '';
+  const [eventEmail, setEventEmail] = useState<string>('');
+  const [eventCode, setEventCode] = useState<string>(validationCode);
+  const [eventStatus, setEventStatus] = useState<string>('');
+  const [eventValid, setEventValid] = useState<boolean>(false);
   const validTheme = theme === 'dark' ? 'dark' : 'light';
 
   // only require captcha if we have a siteKey
@@ -62,6 +68,33 @@ const Registration: React.FC = () => {
       }
     },
   });
+
+  const handleValidateEventCode = async () => {
+    setEventStatus('');
+    if (!eventEmail || !eventCode) {
+      setEventStatus('Veuillez renseigner e‑mail et code');
+      setEventValid(false);
+      return;
+    }
+    try {
+      const res = await fetch('/api/auth/validate-code', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: eventEmail, code: eventCode }),
+      });
+      const data = await res.json();
+      if (res.ok && data.activated) {
+        setEventValid(true);
+        setEventStatus('Code validé. Vous pouvez finaliser votre inscription.');
+      } else {
+        setEventValid(false);
+        setEventStatus(data?.error || 'Code invalide ou expiré');
+      }
+    } catch {
+      setEventValid(false);
+      setEventStatus('Erreur réseau');
+    }
+  };
 
   const renderInput = (id: string, label: TranslationKeys, type: string, validation: object) => (
     <div className="mb-4">
@@ -126,6 +159,38 @@ const Registration: React.FC = () => {
               registerUser.mutate({ ...data, token: token ?? undefined }),
             )}
           >
+            {/* Event validation block (optional) */}
+            <div className="mb-4 rounded-2xl border border-border-light bg-surface-secondary p-3">
+              <div className="mb-2 text-sm font-medium">Accès évènementiel (code)</div>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div>
+                  <input
+                    id="event_email"
+                    type="email"
+                    placeholder="E‑mail utilisé sur /event"
+                    className="webkit-dark-styles transition-color w-full rounded-2xl border border-border-light bg-surface-primary px-3.5 py-2 text-text-primary"
+                    value={eventEmail}
+                    onChange={(e) => setEventEmail(e.target.value)}
+                  />
+                </div>
+                <div className="flex gap-2">
+                  <input
+                    id="event_code"
+                    type="text"
+                    placeholder="Code de validation"
+                    className="webkit-dark-styles transition-color w-full rounded-2xl border border-border-light bg-surface-primary px-3.5 py-2 text-text-primary"
+                    value={eventCode}
+                    onChange={(e) => setEventCode(e.target.value)}
+                  />
+                  <Button type="button" variant="default" onClick={handleValidateEventCode}>
+                    Valider
+                  </Button>
+                </div>
+              </div>
+              {eventStatus && (
+                <div className={`mt-2 text-sm ${eventValid ? 'text-green-600' : 'text-red-500'}`}>{eventStatus}</div>
+              )}
+            </div>
             {renderInput('name', 'com_auth_full_name', 'text', {
               required: localize('com_auth_name_required'),
               minLength: {
@@ -198,7 +263,8 @@ const Registration: React.FC = () => {
                 disabled={
                   Object.keys(errors).length > 0 ||
                   isSubmitting ||
-                  (requireCaptcha && !turnstileToken)
+                  (requireCaptcha && !turnstileToken) ||
+                  !eventValid
                 }
                 type="submit"
                 aria-label="Submit registration"
