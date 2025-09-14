@@ -23,6 +23,8 @@ import Root from './Root';
 import EventRoute from './Event';
 import EventQCM from './EventQCM';
 import EventActivation from './EventActivation';
+import MCBusiness2K25 from './mcbusiness2k25/Public';
+import AdminMCBusiness2K25 from './mcbusiness2k25/Admin';
 // import AdminEvent from './AdminEvent';
 // import OrgEvent from './OrgEvent';
 // import EventSignupCode from './EventSignupCode';
@@ -136,6 +138,14 @@ export const router = createBrowserRouter(
             {
               path: 'event/activation/:token',
               element: <EventActivation />,
+            },
+            {
+              path: 'MCBusiness2K25',
+              element: <MCBusiness2K25 />,
+            },
+            {
+              path: 'admin/mcbusiness2K25',
+              element: <AdminMCBusiness2K25 />,
             },
             // Removed per alignment: code field belongs in /register, and admin/org pages not public
           ],

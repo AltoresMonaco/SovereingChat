@@ -22,9 +22,17 @@ EventStampSchema.index({ expires_at: 1 }, { expireAfterSeconds: 0 });
 const EventLeadSchema = new Schema(
   {
     email: { type: String, required: true },
-    company: { type: String, required: true },
-    domain: { type: String, required: true },
-    seats_requested: { type: Number, required: true },
+    // Nouveau pré‑formulaire (non requis dans l'ancien flux)
+    first_name: { type: String, default: '' },
+    last_name: { type: String, default: '' },
+    use_case: { type: String, default: '' },
+    qcm_gate_passed: { type: Boolean, default: false },
+
+    // Champs historiques (rendus optionnels)
+    company: { type: String, default: '' },
+    domain: { type: String, default: '' },
+    seats_requested: { type: Number, default: 1 },
+
     consent_transactional: { type: Boolean, required: true },
     consent_marketing: { type: Boolean, required: true },
     stamps_completed: { type: Boolean, default: false },

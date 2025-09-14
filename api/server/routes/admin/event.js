@@ -6,7 +6,7 @@ function toCSV(rows, fields) {
   const lines = rows.map((row) => fields.map((f) => `"${esc(row[f])}"`).join(','));
   return [header, ...lines].join('\n');
 }
-const { EventVoucher, EventSeat, EventLead, UsageRollupDaily } = require('~/db/models');
+const { EventVoucher, EventSeat, EventLead, UsageRollupDaily, QcmAttempt, EventMetric } = require('~/db/models');
 const { revokeKey } = require('~/server/services/LiteLLM/client');
 const { logMetric } = require('~/server/services/Event/metrics');
 const { requireJwtAuth, checkAdmin } = require('~/server/middleware');
@@ -122,7 +122,6 @@ router.get('/analytics', async (req, res) => {
     const usage = await UsageRollupDaily.find({ date: today }).lean();
 
     // basic funnel from metrics
-    const { EventMetric } = require('~/db/models');
     const since = new Date(today);
     const until = new Date(today.getTime() + 24 * 60 * 60 * 1000);
     const [stamps, leads, activations] = await Promise.all([
@@ -132,6 +131,20 @@ router.get('/analytics', async (req, res) => {
     ]);
 
     return res.status(200).json({ vouchers, usage, funnel: { stamps, leads, activations } });
+  } catch (err) {
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Admin summary for MCBusiness2K25: attempts count + leads list
+router.get('/mcbusiness2k25/summary', async (req, res) => {
+  try {
+    const attempts = await EventMetric.countDocuments({ type: 'qcm_attempt' });
+    const leads = await EventLead.find({ qcm_gate_passed: true })
+      .select('createdAt first_name last_name email use_case consent_transactional consent_marketing')
+      .sort({ createdAt: -1 })
+      .lean();
+    return res.status(200).json({ attempts, leads });
   } catch (err) {
     return res.status(500).json({ error: 'Internal server error' });
   }

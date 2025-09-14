@@ -17,6 +17,9 @@ const stampLimiter = createIpLimiter(40, 1);
 const leadLimiter = createIpLimiter(20, 1);
 const qcmLimiter = createIpLimiter(5, 1);
 const { getQuestions, submitAnswers } = require('~/server/services/Event/qcm');
+const MAX_GATE_ATTEMPTS = 3;
+const GATE_COOLDOWN_MINUTES = 10;
+const { getOrCreateEventSessionId } = require('~/server/services/Event/qrTokens');
 const crypto = require('node:crypto');
 
 // Public endpoints (no auth)
@@ -276,6 +279,105 @@ router.get('/activation/:token', async (req, res) => {
 // QCM Endpoints
 router.get('/qcm/questions', qcmLimiter, getQuestions);
 router.post('/qcm/submit', qcmLimiter, submitAnswers);
+
+/**
+ * MCBusiness2K25 single-question gate
+ */
+router.get('/mcbusiness2k25/question', qcmLimiter, async (req, res) => {
+  // Static question and options
+  return res.status(200).json({
+    id: 'grimaldi-year',
+    stem: "En quelle année François Grimaldi a-t-il pris le Rocher ?",
+    choices: [
+      { id: '1215', label: '1215' },
+      { id: '1297', label: '1297' },
+      { id: '1419', label: '1419' },
+      { id: '1512', label: '1512' },
+    ],
+  });
+});
+
+router.post('/mcbusiness2k25/answer', qcmLimiter, async (req, res) => {
+  try {
+    const session_id = getOrCreateEventSessionId(req, res);
+    const { choice } = req.body || {};
+    if (!choice) return res.status(400).json({ error: 'Missing choice' });
+
+    // track attempts and cooldown using QcmAttempt
+    let attempt = await QcmAttempt.findOne({ session_id });
+    const now = new Date();
+    if (!attempt) {
+      attempt = await QcmAttempt.create({ session_id, attempts_count: 0, last_attempt_at: null, cooldown_until: null, passed: false });
+    }
+    if (attempt.passed) {
+      return res.status(200).json({ correct: true, attempts_left: Math.max(0, MAX_GATE_ATTEMPTS - attempt.attempts_count) });
+    }
+    if (attempt.cooldown_until && attempt.cooldown_until > now) {
+      return res.status(429).json({ error: 'Cooldown active', retry_after: attempt.cooldown_until.toISOString() });
+    }
+    if (attempt.attempts_count >= MAX_GATE_ATTEMPTS) {
+      return res.status(429).json({ error: 'Max attempts reached' });
+    }
+
+    const correct = choice === '1297';
+    attempt.attempts_count += 1;
+    attempt.last_attempt_at = now;
+    if (!correct && attempt.attempts_count >= MAX_GATE_ATTEMPTS) {
+      attempt.cooldown_until = new Date(now.getTime() + GATE_COOLDOWN_MINUTES * 60 * 1000);
+    }
+    if (correct) attempt.passed = true;
+    await attempt.save();
+    await logMetric('qcm_attempt', { session_id, passed: correct, correct: correct ? 1 : 0, total: 1 });
+    return res.status(200).json({ correct, attempts_left: Math.max(0, MAX_GATE_ATTEMPTS - attempt.attempts_count), cooldown_ms: attempt.cooldown_until ? Math.max(0, attempt.cooldown_until - now) : undefined });
+  } catch (err) {
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+/**
+ * Pre-form submission after gate
+ */
+router.post('/pre-form', leadLimiter, async (req, res) => {
+  try {
+    const session_id = getOrCreateEventSessionId(req, res);
+    const gate = await QcmAttempt.findOne({ session_id }).select('passed').lean();
+    if (!gate?.passed) {
+      return res.status(403).json({ error: 'Gate not passed' });
+    }
+    const { first_name, last_name, email, use_case, consent_transactional, consent_marketing } = req.body || {};
+    if (!first_name || !last_name || !email || consent_transactional == null) {
+      return res.status(400).json({ error: 'Missing required fields' });
+    }
+    if (process.env.BLOCK_WEBMAILS === 'true') {
+      const { isWebmail } = require('~/server/services/emailValidation');
+      if (isWebmail(email)) {
+        return res.status(403).json({ error: 'Webmail addresses are not allowed' });
+      }
+    }
+    const expires_at = getActivationExpiryDate();
+    const domain = (email.split('@')[1] || '').toLowerCase();
+    const lead = await EventLead.create({
+      email,
+      first_name,
+      last_name,
+      use_case: use_case || '',
+      qcm_gate_passed: true,
+      consent_transactional: !!consent_transactional,
+      consent_marketing: !!consent_marketing,
+      // legacy optional fields
+      company: '',
+      domain,
+      seats_requested: 1,
+      stamps_completed: false,
+      status: 'pending',
+      expires_at,
+    });
+    await logMetric('lead_created', { email, first_name, last_name });
+    return res.status(200).json({ ok: true, lead_id: lead._id });
+  } catch (err) {
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
 
 module.exports = router;
 
