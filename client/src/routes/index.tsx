@@ -47,6 +47,11 @@ export const router = createBrowserRouter(
       errorElement: <RouteErrorBoundary />,
     },
     {
+      path: 'MCBusiness2K25',
+      element: <MCBusiness2K25 />,
+      errorElement: <RouteErrorBoundary />,
+    },
+    {
       path: 'oauth',
       errorElement: <RouteErrorBoundary />,
       children: [
@@ -138,10 +143,6 @@ export const router = createBrowserRouter(
             {
               path: 'event/activation/:token',
               element: <EventActivation />,
-            },
-            {
-              path: 'MCBusiness2K25',
-              element: <MCBusiness2K25 />,
             },
             {
               path: 'admin/mcbusiness2K25',
