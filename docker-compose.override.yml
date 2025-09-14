@@ -53,6 +53,8 @@ services:
   ollama:
     image: ollama/ollama:latest
     restart: always
+    environment:
+      - OLLAMA_KEEP_ALIVE=24h
     volumes:
       - /srv/librechat-data/ollama:/root/.ollama
     networks:

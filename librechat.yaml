@@ -166,20 +166,16 @@ endpoints:
       iconURL: "/assets/altores.svg"
       models:
         default:
-          - "altores-private-intelligence-q8:latest"
-          - "altores-sovereign-intelligence-4B:latest"
           - "lucifers/Polaris-4B-Preview.Q8_0:latest"
           - "llava:latest"
           - "gemma3:4b"
         fetch: false
       # Optional: Friendly names and icons for model IDs
       modelNames:
-        "altores-private-intelligence-q8:latest": "Altores Sovereign Intelligence 2.0"
         "lucifers/Polaris-4B-Preview.Q8_0:latest": "Altores Sovereign Intelligence Reasoning 1.0"
         "llava:latest": "Altores Sovereign Intelligence Vision"
         "gemma3:4b": "Altores Sovereign Intelligence 3.0"
       modelIcons:
-        "altores-private-intelligence-q8:latest": "/assets/altores.svg"
         "lucifers/Polaris-4B-Preview.Q8_0:latest": "/assets/altores.svg"
         "llava:latest": "/assets/altores.svg"
         "gemma3:4b": "/assets/altores.svg"

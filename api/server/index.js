@@ -26,6 +26,7 @@ const noIndex = require('./middleware/noIndex');
 const strictCSP = require('./middleware/strictCSP');
 const { seedDatabase } = require('~/models');
 const routes = require('./routes');
+const { warmupOllama } = require('./services/start/warmup');
 
 const { PORT, HOST, ALLOW_SOCIAL_LOGIN, DISABLE_COMPRESSION, TRUST_PROXY } = process.env ?? {};
 
@@ -176,6 +177,8 @@ const startServer = async () => {
     }
 
     initializeMCPs().then(() => checkMigrations());
+    // Fire-and-forget warmup for Ollama (Gemma)
+    warmupOllama(appConfig).catch(() => {});
     if (process.env.EVENT_ENABLED === 'true') {
       startOrgCapJob();
     }
