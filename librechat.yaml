@@ -182,52 +182,11 @@ endpoints:
         "altores-private-intelligence-q8:latest": "/assets/altores.svg"
         "lucifers/Polaris-4B-Preview.Q8_0:latest": "/assets/altores.svg"
         "llava:latest": "/assets/altores.svg"
+        "gemma3:4b": "/assets/altores.svg"
       visionModels:
         - "llava:latest"
         - "gemma3:4b"
 
-    - name: "MiniCPM"
-      displayLabel: "MiniCPM"
-      apiKey: "ollama"
-      baseURL: "http://llamacpp:8080/v1/"
-      iconURL: "/assets/altores.svg"
-      models:
-        default:
-          - "minicpm-v-4_5:latest"
-        fetch: false
-      modelNames:
-        "minicpm-v-4_5:latest": "MiniCPM-V 4.5 (Vision/OCR)"
-      modelIcons:
-        "minicpm-v-4_5:latest": "/assets/altores.svg"
-      titleConvo: true
-      titleModel: "current_model"
-      summarize: false
-      summaryModel: "current_model"
-      forcePrompt: false
-      modelDisplayLabel: "MiniCPM"
-      # vision disabled for llama.cpp backend (text-only)
-
-    - name: "MiniCPMVision"
-      displayLabel: "MiniCPM (Vision/OCR)"
-      apiKey: "ollama"
-      baseURL: "http://minicpm:8000/v1/"
-      iconURL: "/assets/altores.svg"
-      models:
-        default:
-          - "minicpm-v-4_5:latest"
-        fetch: false
-      modelNames:
-        "minicpm-v-4_5:latest": "MiniCPM-V 4.5 (Vision/OCR)"
-      modelIcons:
-        "minicpm-v-4_5:latest": "/assets/altores.svg"
-      titleConvo: true
-      titleModel: "current_model"
-      summarize: false
-      summaryModel: "current_model"
-      forcePrompt: false
-      modelDisplayLabel: "MiniCPM Vision"
-      visionModels:
-        - "minicpm-v-4_5:latest"
 
 
 fileConfig:
