@@ -19,7 +19,6 @@ const qcmLimiter = createIpLimiter(5, 1);
 const { getQuestions, submitAnswers } = require('~/server/services/Event/qcm');
 const MAX_GATE_ATTEMPTS = 3;
 const GATE_COOLDOWN_MINUTES = 10;
-const { getOrCreateEventSessionId } = require('~/server/services/Event/qrTokens');
 const crypto = require('node:crypto');
 
 // Public endpoints (no auth)
