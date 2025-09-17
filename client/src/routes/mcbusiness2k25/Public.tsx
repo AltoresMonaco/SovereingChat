@@ -12,35 +12,32 @@ export default function MCBusiness2K25() {
         last_name: '',
         email: '',
         use_case: '',
+        access: 'chat' as 'api' | 'chat' | 'both',
         consent_transactional: true,
         consent_marketing: false
     });
     const [submitted, setSubmitted] = useState<boolean>(false);
 
-    // Check if already passed on mount
+    // Check if already passed on mount (fetch question will set state; server enforces gate on submit)
     useEffect(() => {
-        const checkSession = async () => {
+        let ignore = false;
+        (async () => {
             try {
-                // Try to answer with empty to check if already passed
-                const res = await fetch('/api/event/mcbusiness2k25/answer', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ choice: '' }),
-                    credentials: 'include'
-                });
+                const res = await fetch('/api/event/mcbusiness2k25/question', { credentials: 'include' });
                 const data = await res.json();
-                if (res.ok && data.correct) {
-                    setPassed(true);
+                if (!ignore && res.ok) {
+                    setQuestion(data);
                 }
             } catch {
-                // Ignore errors on session check
+                if (!ignore) setStatus('Erreur de connexion au serveur');
             }
-        };
-        checkSession();
+        })();
+        return () => { ignore = true; };
     }, []);
 
+    // If not passed, ensure question is loaded (idempotent)
     useEffect(() => {
-        if (!passed) {
+        if (!passed && !question) {
             let ignore = false;
             (async () => {
                 try {
@@ -55,7 +52,7 @@ export default function MCBusiness2K25() {
             })();
             return () => { ignore = true; };
         }
-    }, [passed]);
+    }, [passed, question]);
 
     const onAnswer = async () => {
         if (!choice) return;
@@ -74,14 +71,10 @@ export default function MCBusiness2K25() {
                     setPassed(true);
                     setStatus(null);
                 } else {
-                    setStatus(`Mauvaise réponse. ${data.attempts_left > 0 ? `Il vous reste ${data.attempts_left} essai(s).` : 'Plus d\'essais disponibles.'}`);
+                    setStatus('Mauvaise réponse. Retente ta chance.');
                 }
             } else {
-                if (res.status === 429) {
-                    setStatus(`Trop d'essais. Veuillez réessayer plus tard.`);
-                } else {
-                    setStatus(data?.error || 'Erreur lors de la validation');
-                }
+                setStatus(data?.error || 'Erreur lors de la validation');
             }
         } catch {
             setStatus('Erreur de connexion au serveur');
@@ -219,6 +212,25 @@ export default function MCBusiness2K25() {
                             </p>
 
                             <div className="space-y-3">
+                                <div>
+                                    <label className="mb-1 block text-sm font-medium text-text-primary">
+                                        Accès souhaité
+                                    </label>
+                                    <select
+                                        value={form.access}
+                                        onChange={(e) => setForm({ ...form, access: e.target.value as 'api' | 'chat' | 'both' })}
+                                        className="w-full rounded-md border border-border-medium bg-surface-primary px-3 py-2 text-text-primary focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                    >
+                                        <option value="chat">Chat souverain</option>
+                                        <option value="api">Accès API</option>
+                                        <option value="both">Les deux</option>
+                                    </select>
+                                    {form.access !== 'chat' && (
+                                        <p className="mt-1 text-xs text-text-tertiary">
+                                            Un e-mail professionnel est requis si vous choisissez l'accès API.
+                                        </p>
+                                    )}
+                                </div>
                                 <div>
                                     <label className="mb-1 block text-sm font-medium text-text-primary">
                                         Prénom *

@@ -2,6 +2,7 @@ import { SelectDropDown } from '@librechat/client';
 import type { TModelSelectProps } from '~/common';
 import SelectDropDownPop from '~/components/Input/ModelSelect/SelectDropDownPop';
 import { cn, cardStyle } from '~/utils';
+import { useModelAliases } from '~/hooks/useModelAliases';
 
 export default function ChatGPT({
   conversation,
@@ -18,11 +19,13 @@ export default function ChatGPT({
     return null;
   }
   const Menu = popover ? SelectDropDownPop : SelectDropDown;
+  const modelOptions = useModelAliases(conversation?.endpoint, models);
+  
   return (
     <Menu
       value={model ?? ''}
       setValue={setOption('model')}
-      availableValues={models}
+      availableValues={modelOptions.length > 0 ? modelOptions : models}
       showAbove={showAbove}
       showLabel={false}
       className={cn(

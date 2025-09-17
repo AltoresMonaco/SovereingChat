@@ -62,6 +62,10 @@ export default function ModelPanel({
 
   const { data: endpointsConfig = {} } = useGetEndpointsQuery();
 
+  const modelAliases = useMemo(() => {
+    return (provider && endpointsConfig?.[provider]?.modelNames) || {};
+  }, [endpointsConfig, provider]);
+
   const bedrockRegions = useMemo(() => {
     return endpointsConfig?.[provider]?.availableRegions ?? [];
   }, [endpointsConfig, provider]);
@@ -191,7 +195,7 @@ export default function ModelPanel({
                     searchPlaceholder={localize('com_ui_select_model')}
                     setValue={field.onChange}
                     items={models.map((model) => ({
-                      label: model,
+                      label: (modelAliases as Record<string, string>)[model] ?? model,
                       value: model,
                     }))}
                     disabled={!provider}

@@ -149,7 +149,7 @@ router.get('/mcbusiness2k25/summary', async (req, res) => {
         { last_name: { $exists: true, $ne: '' } }
       ]
     })
-      .select('_id createdAt first_name last_name email use_case consent_transactional consent_marketing')
+      .select('_id createdAt first_name last_name email access use_case consent_transactional consent_marketing')
       .sort({ createdAt: -1 })
       .lean();
     return res.status(200).json({ attempts, leads });

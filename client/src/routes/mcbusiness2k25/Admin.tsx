@@ -9,6 +9,7 @@ type Lead = {
     first_name: string;
     last_name: string;
     email: string;
+    access?: 'api' | 'chat' | 'both';
     use_case?: string;
     consent_transactional: boolean;
     consent_marketing: boolean;
@@ -72,12 +73,13 @@ export default function AdminMCBusiness2K25() {
     };
 
     const handleExportCSV = () => {
-        const headers = ['Date', 'Prénom', 'Nom', 'Email', 'Usage', 'Consent Transactionnel', 'Consent Marketing'];
+        const headers = ['Date', 'Prénom', 'Nom', 'Email', 'Accès', 'Usage', 'Consent Transactionnel', 'Consent Marketing'];
         const rows = leads.map(l => [
             new Date(l.createdAt).toLocaleString('fr-FR'),
             l.first_name,
             l.last_name,
             l.email,
+            l.access || 'chat',
             l.use_case || '',
             l.consent_transactional ? 'Oui' : 'Non',
             l.consent_marketing ? 'Oui' : 'Non'
@@ -229,6 +231,9 @@ export default function AdminMCBusiness2K25() {
                                     <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-text-secondary hidden lg:table-cell">
                                         Usage
                                     </th>
+                                    <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-text-secondary">
+                                        Accès
+                                    </th>
                                     <th className="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider text-text-secondary">
                                         Consent T.
                                     </th>
@@ -264,6 +269,9 @@ export default function AdminMCBusiness2K25() {
                                             <div className="max-w-xs truncate" title={lead.use_case}>
                                                 {lead.use_case || '-'}
                                             </div>
+                                        </td>
+                                        <td className="px-4 py-3 text-sm text-text-primary whitespace-nowrap">
+                                            {lead.access === 'both' ? 'API + Chat' : lead.access === 'api' ? 'API' : 'Chat souverain'}
                                         </td>
                                         <td className="px-4 py-3 text-center">
                                             {lead.consent_transactional ? (

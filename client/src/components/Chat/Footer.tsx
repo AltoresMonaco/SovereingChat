@@ -38,9 +38,9 @@ export default function Footer({ className }: { className?: string }) {
     typeof config?.customFooter === 'string'
       ? config.customFooter
       : '[LibreChat ' +
-        Constants.VERSION +
-        '](https://librechat.ai) - ' +
-        localize('com_ui_latest_footer')
+      Constants.VERSION +
+      '](https://librechat.ai) - ' +
+      localize('com_ui_latest_footer')
   ).split('|');
 
   useEffect(() => {
@@ -71,6 +71,9 @@ export default function Footer({ className }: { className?: string }) {
           },
 
           p: ({ node: _n, ...props }) => <span {...props} />,
+          img: ({ node: _n, ...props }) => (
+            <img className="inline h-[1.1em] align-[-0.125em]" {...props} />
+          ),
         }}
       >
         {text.trim()}
@@ -87,7 +90,7 @@ export default function Footer({ className }: { className?: string }) {
       <div
         className={
           className ??
-          'absolute bottom-0 left-0 right-0 hidden items-center justify-center gap-2 px-2 py-2 text-center text-xs text-text-primary sm:flex md:px-[60px]'
+          'absolute bottom-0 left-0 right-0 hidden items-center justify-center gap-2 px-2 py-2 text-center text-sm text-text-primary sm:flex md:px-[60px]'
         }
         role="contentinfo"
       >

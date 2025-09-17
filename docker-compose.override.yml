@@ -24,7 +24,7 @@ services:
       - ALLOW_EMAIL_LOGIN=${ALLOW_EMAIL_LOGIN}
       - ALLOW_SOCIAL_LOGIN=${ALLOW_SOCIAL_LOGIN}
       - JWT_SECRET=${JWT_SECRET}
-      - CUSTOM_FOOTER=[Chat Souverain](/) made by [Altores](https://altores.app), powered by [Monaco Cloud](https://www.monacocloud.mc/)
+      - CUSTOM_FOOTER=[Chat Souverain](/) made by [Altores](https://altores.app), powered by [![Monaco Cloud](/assets/MonacoCloudLogo.png)](https://www.monacocloud.mc/)
     volumes:
       - /opt/apps/sovereignchat/librechat.yaml:/app/librechat.yaml:ro
       - /srv/librechat-data/uploads:/app/uploads

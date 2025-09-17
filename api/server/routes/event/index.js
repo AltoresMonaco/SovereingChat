@@ -17,8 +17,6 @@ const stampLimiter = createIpLimiter(40, 1);
 const leadLimiter = createIpLimiter(20, 1);
 const qcmLimiter = createIpLimiter(5, 1);
 const { getQuestions, submitAnswers } = require('~/server/services/Event/qcm');
-const MAX_GATE_ATTEMPTS = 3;
-const GATE_COOLDOWN_MINUTES = 10;
 const crypto = require('node:crypto');
 
 // Public endpoints (no auth)
@@ -282,7 +280,7 @@ router.post('/qcm/submit', qcmLimiter, submitAnswers);
 /**
  * MCBusiness2K25 single-question gate
  */
-router.get('/mcbusiness2k25/question', qcmLimiter, async (req, res) => {
+router.get('/mcbusiness2k25/question', async (req, res) => {
   // Static question and options
   return res.status(200).json({
     id: 'grimaldi-year',
@@ -296,7 +294,7 @@ router.get('/mcbusiness2k25/question', qcmLimiter, async (req, res) => {
   });
 });
 
-router.post('/mcbusiness2k25/answer', qcmLimiter, async (req, res) => {
+router.post('/mcbusiness2k25/answer', async (req, res) => {
   try {
     const session_id = getOrCreateEventSessionId(req, res);
     const { choice } = req.body || {};
@@ -309,25 +307,19 @@ router.post('/mcbusiness2k25/answer', qcmLimiter, async (req, res) => {
       attempt = await QcmAttempt.create({ session_id, attempts_count: 0, last_attempt_at: null, cooldown_until: null, passed: false });
     }
     if (attempt.passed) {
-      return res.status(200).json({ correct: true, attempts_left: Math.max(0, MAX_GATE_ATTEMPTS - attempt.attempts_count) });
-    }
-    if (attempt.cooldown_until && attempt.cooldown_until > now) {
-      return res.status(429).json({ error: 'Cooldown active', retry_after: attempt.cooldown_until.toISOString() });
-    }
-    if (attempt.attempts_count >= MAX_GATE_ATTEMPTS) {
-      return res.status(429).json({ error: 'Max attempts reached' });
+      return res.status(200).json({ correct: true });
     }
 
     const correct = choice === '1297';
-    attempt.attempts_count += 1;
+    // Track attempts for analytics, but do not limit attempts
+    attempt.attempts_count = (attempt.attempts_count || 0) + 1;
     attempt.last_attempt_at = now;
-    if (!correct && attempt.attempts_count >= MAX_GATE_ATTEMPTS) {
-      attempt.cooldown_until = new Date(now.getTime() + GATE_COOLDOWN_MINUTES * 60 * 1000);
+    if (correct) {
+      attempt.passed = true;
     }
-    if (correct) attempt.passed = true;
     await attempt.save();
     await logMetric('qcm_attempt', { session_id, passed: correct, correct: correct ? 1 : 0, total: 1 });
-    return res.status(200).json({ correct, attempts_left: Math.max(0, MAX_GATE_ATTEMPTS - attempt.attempts_count), cooldown_ms: attempt.cooldown_until ? Math.max(0, attempt.cooldown_until - now) : undefined });
+    return res.status(200).json({ correct });
   } catch (err) {
     return res.status(500).json({ error: 'Internal server error' });
   }
@@ -343,14 +335,16 @@ router.post('/pre-form', leadLimiter, async (req, res) => {
     if (!gate?.passed) {
       return res.status(403).json({ error: 'Gate not passed' });
     }
-    const { first_name, last_name, email, use_case, consent_transactional, consent_marketing } = req.body || {};
+    const { first_name, last_name, email, use_case, access, consent_transactional, consent_marketing } = req.body || {};
     if (!first_name || !last_name || !email || consent_transactional == null) {
       return res.status(400).json({ error: 'Missing required fields' });
     }
-    if (process.env.BLOCK_WEBMAILS === 'true') {
+    // Email rule: pro email required only if access includes API
+    const requiresPro = access === 'api' || access === 'both';
+    if (requiresPro || process.env.BLOCK_WEBMAILS === 'true') {
       const { isWebmail } = require('~/server/services/emailValidation');
       if (isWebmail(email)) {
-        return res.status(403).json({ error: 'Webmail addresses are not allowed' });
+        return res.status(403).json({ error: 'Adresse e-mail professionnelle requise pour cet accès' });
       }
     }
     const expires_at = getActivationExpiryDate();
@@ -360,6 +354,7 @@ router.post('/pre-form', leadLimiter, async (req, res) => {
       first_name,
       last_name,
       use_case: use_case || '',
+      access: access || 'chat',
       qcm_gate_passed: true,
       consent_transactional: !!consent_transactional,
       consent_marketing: !!consent_marketing,

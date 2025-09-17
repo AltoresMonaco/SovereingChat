@@ -10,14 +10,23 @@ import {
   HoverCardTrigger,
 } from '@librechat/client';
 import type { TModelSelectProps, OnInputNumberChange } from '~/common';
-import { cn, defaultTextProps, optionText, removeFocusOutlines, removeFocusRings } from '~/utils';
+import {
+  cn,
+  defaultTextProps,
+  optionText,
+  removeFocusOutlines,
+  removeFocusRings,
+  getModelOptions,
+} from '~/utils';
 import OptionHoverAlt from '~/components/SidePanel/Parameters/OptionHover';
 import { useLocalize, useDebouncedInput } from '~/hooks';
+import { useGetEndpointsQuery } from '~/data-provider';
 import OptionHover from './OptionHover';
 import { ESide } from '~/common';
 
 export default function Settings({ conversation, setOption, models, readonly }: TModelSelectProps) {
   const localize = useLocalize();
+  const { data: endpointsConfig = {} } = useGetEndpointsQuery();
   const google = endpointSettings[EModelEndpoint.google];
   const {
     model,
@@ -58,7 +67,7 @@ export default function Settings({ conversation, setOption, models, readonly }: 
             title={localize('com_ui_model')}
             value={model ?? ''}
             setValue={setModel}
-            availableValues={models}
+            availableValues={getModelOptions(models, conversation?.endpoint, endpointsConfig)}
             disabled={readonly}
             className={cn(defaultTextProps, 'flex w-full resize-none', removeFocusRings)}
             containerClassName="flex w-full resize-none"

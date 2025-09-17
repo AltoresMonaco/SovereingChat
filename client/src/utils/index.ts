@@ -1,6 +1,7 @@
 import React from 'react';
 
 export * from './map';
+export * from './modelAliases';
 export * from './json';
 export * from './files';
 export * from './latex';

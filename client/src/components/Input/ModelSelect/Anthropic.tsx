@@ -2,6 +2,7 @@ import { SelectDropDown } from '@librechat/client';
 import type { TModelSelectProps } from '~/common';
 import SelectDropDownPop from '~/components/Input/ModelSelect/SelectDropDownPop';
 import { cn, cardStyle } from '~/utils';
+import { useModelAliases } from '~/hooks/useModelAliases';
 
 export default function Anthropic({
   conversation,
@@ -11,11 +12,13 @@ export default function Anthropic({
   popover = false,
 }: TModelSelectProps) {
   const Menu = popover ? SelectDropDownPop : SelectDropDown;
+  const modelOptions = useModelAliases(conversation?.endpoint, models);
+  
   return (
     <Menu
       value={conversation?.model ?? ''}
       setValue={setOption('model')}
-      availableValues={models}
+      availableValues={modelOptions.length > 0 ? modelOptions : models}
       showAbove={showAbove}
       showLabel={false}
       className={cn(

@@ -22,6 +22,8 @@ EventStampSchema.index({ expires_at: 1 }, { expireAfterSeconds: 0 });
 const EventLeadSchema = new Schema(
   {
     email: { type: String, required: true },
+    // Accès souhaité: 'api' | 'chat' | 'both'
+    access: { type: String, enum: ['api', 'chat', 'both'], default: 'chat' },
     // Nouveau pré‑formulaire (non requis dans l'ancien flux)
     first_name: { type: String, default: '' },
     last_name: { type: String, default: '' },
