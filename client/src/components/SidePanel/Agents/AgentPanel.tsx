@@ -19,6 +19,7 @@ import {
   useGetExpandedAgentByIdQuery,
 } from '~/data-provider';
 import { createProviderOption, getDefaultAgentFormValues } from '~/utils';
+import { getEndpointField } from '~/utils';
 import { useResourcePermissions } from '~/hooks/useResourcePermissions';
 import { useSelectAgent, useLocalize, useAuthContext } from '~/hooks';
 import { useAgentPanelContext } from '~/Providers/AgentPanelContext';
@@ -95,7 +96,12 @@ export default function AgentPanel() {
             key !== EModelEndpoint.chatGPTBrowser &&
             key !== EModelEndpoint.gptPlugins,
         )
-        .map((provider) => createProviderOption(provider)),
+        .map((provider) => ({
+          label:
+            ((getEndpointField(endpointsConfig as any, provider, 'displayLabel') as string | undefined) ??
+              createProviderOption(provider).label),
+          value: provider,
+        })),
     [endpointsConfig, allowedProviders],
   );
 
@@ -114,9 +120,8 @@ export default function AgentPanel() {
         });
       } else {
         showToast({
-          message: `${localize('com_assistants_update_success')} ${
-            data.name ?? localize('com_ui_agent')
-          }`,
+          message: `${localize('com_assistants_update_success')} ${data.name ?? localize('com_ui_agent')
+            }`,
         });
       }
       // Clear the ref after use
@@ -125,9 +130,8 @@ export default function AgentPanel() {
     onError: (err) => {
       const error = err as Error;
       showToast({
-        message: `${localize('com_agents_update_error')}${
-          error.message ? ` ${localize('com_ui_error')}: ${error.message}` : ''
-        }`,
+        message: `${localize('com_agents_update_error')}${error.message ? ` ${localize('com_ui_error')}: ${error.message}` : ''
+          }`,
         status: 'error',
       });
     },
@@ -137,17 +141,15 @@ export default function AgentPanel() {
     onSuccess: (data) => {
       setCurrentAgentId(data.id);
       showToast({
-        message: `${localize('com_assistants_create_success')} ${
-          data.name ?? localize('com_ui_agent')
-        }`,
+        message: `${localize('com_assistants_create_success')} ${data.name ?? localize('com_ui_agent')
+          }`,
       });
     },
     onError: (err) => {
       const error = err as Error;
       showToast({
-        message: `${localize('com_agents_create_error')}${
-          error.message ? ` ${localize('com_ui_error')}: ${error.message}` : ''
-        }`,
+        message: `${localize('com_agents_create_error')}${error.message ? ` ${localize('com_ui_error')}: ${error.message}` : ''
+          }`,
         status: 'error',
       });
     },

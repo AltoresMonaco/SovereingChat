@@ -22,6 +22,7 @@ import { useSetIndexOptions, useLocalize, useDebouncedInput } from '~/hooks';
 import PopoverButtons from '~/components/Chat/Input/PopoverButtons';
 import { EndpointSettings } from '~/components/Endpoints';
 import { useGetEndpointsQuery } from '~/data-provider';
+import { getEndpointField } from '~/utils';
 import { useChatContext } from '~/Providers';
 import store from '~/store';
 
@@ -43,13 +44,19 @@ const EditPresetDialog = ({
   });
   const [presetModalVisible, setPresetModalVisible] = useRecoilState(store.presetModalVisible);
 
-  const { data: _endpoints = [] } = useGetEndpointsQuery({
-    select: mapEndpoints,
-  });
+  const { data: _endpoints = [] } = useGetEndpointsQuery({ select: mapEndpoints });
+  const { data: endpointsConfig = {} } = useGetEndpointsQuery();
 
   const availableEndpoints = useMemo(() => {
     return _endpoints.filter((endpoint) => !isAgentsEndpoint(endpoint));
   }, [_endpoints]);
+
+  const availableEndpointOptions = useMemo(() => {
+    return availableEndpoints.map((ep) => ({
+      value: ep,
+      label: (getEndpointField(endpointsConfig, ep, 'displayLabel') as string | undefined) || ep,
+    }));
+  }, [availableEndpoints, endpointsConfig]);
 
   useEffect(() => {
     if (!preset) {
@@ -177,7 +184,7 @@ const EditPresetDialog = ({
                 showLabel={false}
                 emptyTitle={true}
                 searchPlaceholder={localize('com_endpoint_search')}
-                availableValues={availableEndpoints}
+                availableValues={availableEndpointOptions}
               />
             </div>
           </div>
