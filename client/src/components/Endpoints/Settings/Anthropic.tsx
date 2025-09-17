@@ -4,6 +4,8 @@ import type { SettingDefinition } from 'librechat-data-provider';
 import type { TModelSelectProps } from '~/common';
 import { componentMapping } from '~/components/SidePanel/Parameters/components';
 import { presetSettings } from 'librechat-data-provider';
+import { useGetEndpointsQuery } from '~/data-provider';
+import { getModelOptions } from '~/utils';
 
 export default function AnthropicSettings({
   conversation,
@@ -11,6 +13,8 @@ export default function AnthropicSettings({
   models,
   readonly,
 }: TModelSelectProps) {
+  const { data: endpointsConfig = {} } = useGetEndpointsQuery();
+
   const parameters = useMemo(() => {
     const [combinedKey, endpointKey] = getSettingsKeys(
       conversation?.endpointType ?? conversation?.endpoint ?? '',
@@ -18,6 +22,10 @@ export default function AnthropicSettings({
     );
     return presetSettings[combinedKey] ?? presetSettings[endpointKey];
   }, [conversation]);
+
+  const modelOptions = useMemo(() => {
+    return getModelOptions(models, conversation?.endpoint, endpointsConfig);
+  }, [models, conversation?.endpoint, endpointsConfig]);
 
   if (!parameters) {
     return null;
@@ -44,7 +52,7 @@ export default function AnthropicSettings({
     };
 
     if (key === 'model') {
-      return <Component {...props} options={models} />;
+      return <Component {...props} options={modelOptions} />;
     }
 
     return <Component {...props} />;

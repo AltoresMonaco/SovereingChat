@@ -73,6 +73,7 @@ export default defineConfig(({ command }) => ({
             src: 'assets/apple-touch-icon-180x180.png',
             sizes: '180x180',
             type: 'image/png',
+            purpose: 'any',
           },
           {
             src: 'assets/altores.png',

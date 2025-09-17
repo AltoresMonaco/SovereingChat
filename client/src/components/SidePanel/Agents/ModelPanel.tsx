@@ -14,7 +14,7 @@ import {
 import type * as t from 'librechat-data-provider';
 import type { AgentForm, AgentModelPanelProps, StringOption } from '~/common';
 import { useGetEndpointsQuery } from '~/data-provider';
-import { getEndpointField, cn } from '~/utils';
+import { getEndpointField, cn, getModelOptions } from '~/utils';
 import { useLocalize } from '~/hooks';
 import { Panel } from '~/common';
 
@@ -24,6 +24,7 @@ export default function ModelPanel({
   models: modelsData,
 }: Pick<AgentModelPanelProps, 'models' | 'providers' | 'setActivePanel'>) {
   const localize = useLocalize();
+  const { data: endpointsConfig } = useGetEndpointsQuery();
 
   const { control, setValue } = useFormContext<AgentForm>();
 
@@ -43,6 +44,11 @@ export default function ModelPanel({
     [modelsData, provider],
   );
 
+  const modelOptions = useMemo(() => {
+    if (!provider) return [];
+    return getModelOptions(models, provider, endpointsConfig);
+  }, [models, provider, endpointsConfig]);
+
   useEffect(() => {
     const _model = model ?? '';
     if (provider && _model) {
@@ -59,8 +65,6 @@ export default function ModelPanel({
       setValue('model', models[0] ?? '');
     }
   }, [provider, models, modelsData, setValue, model]);
-
-  const { data: endpointsConfig = {} } = useGetEndpointsQuery();
 
   const modelAliases = useMemo(() => {
     return (provider && endpointsConfig?.[provider]?.modelNames) || {};
@@ -143,7 +147,7 @@ export default function ModelPanel({
                 <>
                   <ControlCombobox
                     selectedValue={value}
-                    displayValue={alternateName[display] ?? display}
+                    displayValue={display}
                     selectPlaceholder={localize('com_ui_select_provider')}
                     searchPlaceholder={localize('com_ui_select_search_provider')}
                     setValue={field.onChange}
@@ -194,10 +198,7 @@ export default function ModelPanel({
                     }
                     searchPlaceholder={localize('com_ui_select_model')}
                     setValue={field.onChange}
-                    items={models.map((model) => ({
-                      label: (modelAliases as Record<string, string>)[model] ?? model,
-                      value: model,
-                    }))}
+                    items={modelOptions}
                     disabled={!provider}
                     className={cn('disabled:opacity-50', error ? 'border-2 border-red-500' : '')}
                     ariaLabel={localize('com_ui_model')}

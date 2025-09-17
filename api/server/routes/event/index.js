@@ -284,7 +284,7 @@ router.get('/mcbusiness2k25/question', async (req, res) => {
   // Static question and options
   return res.status(200).json({
     id: 'grimaldi-year',
-    stem: "En quelle année François Grimaldi a-t-il pris le Rocher ?",
+    stem: "À quelle date François Grimaldi s’est-il emparé du Rocher ?",
     choices: [
       { id: '1215', label: '1215' },
       { id: '1297', label: '1297' },
