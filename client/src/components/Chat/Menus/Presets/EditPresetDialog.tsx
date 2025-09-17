@@ -179,8 +179,8 @@ const EditPresetDialog = ({
                 {localize('com_endpoint')}
               </Label>
               <SelectDropDown
-                value={endpoint || ''}
-                setValue={switchEndpoint}
+                value={availableEndpointOptions.find((o) => o.value === endpoint) ?? endpoint || ''}
+                setValue={(opt) => switchEndpoint(typeof opt === 'string' ? opt : (opt as any)?.value)}
                 showLabel={false}
                 emptyTitle={true}
                 searchPlaceholder={localize('com_endpoint_search')}

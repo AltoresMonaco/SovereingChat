@@ -84,7 +84,8 @@ function UnknownIcon({
   }
 
   if (iconURL) {
-    return <img className={className} src={iconURL} alt={`${endpoint} Icon`} />;
+    const altText = currentEndpoint === KnownEndpoints.ollama ? 'Altores Icon' : `${endpoint} Icon`;
+    return <img className={className} src={iconURL} alt={altText} />;
   }
 
   const assetPath: string = knownEndpointAssets[currentEndpoint] ?? '';
@@ -93,6 +94,7 @@ function UnknownIcon({
     return <CustomMinimalIcon className={className} />;
   }
 
+  const altText = currentEndpoint === KnownEndpoints.ollama ? 'Altores Icon' : `${currentEndpoint} Icon`;
   return (
     <img
       className={getKnownClass({
@@ -101,7 +103,7 @@ function UnknownIcon({
         className,
       })}
       src={assetPath}
-      alt={`${currentEndpoint} Icon`}
+      alt={altText}
     />
   );
 }
