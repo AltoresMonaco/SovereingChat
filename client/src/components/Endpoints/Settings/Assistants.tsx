@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import TextareaAutosize from 'react-textarea-autosize';
 import { Label, HoverCard, SelectDropDown, HoverCardTrigger } from '@librechat/client';
+import { getModelDisplayName } from '~/utils/modelAliases';
 import type { Assistant, TPreset } from 'librechat-data-provider';
 import type { TModelSelectProps, Option } from '~/common';
 import {
@@ -120,7 +121,7 @@ export default function Settings({ conversation, setOption, models, readonly }: 
       <div className="col-span-6 flex flex-col items-center justify-start gap-6 sm:col-span-3">
         <div className="grid w-full items-center gap-2">
           <SelectDropDown
-            value={model ?? ''}
+            value={model ? modelOptions.find(opt => opt.value === model) || model : ''}
             title={localize('com_ui_model')}
             setValue={createDropdownSetter(setModel)}
             availableValues={modelOptions}

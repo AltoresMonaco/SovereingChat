@@ -3,6 +3,7 @@ import type { TModelSelectProps } from '~/common';
 import SelectDropDownPop from '~/components/Input/ModelSelect/SelectDropDownPop';
 import { useModelAliases } from '~/hooks/useModelAliases';
 import { cn, cardStyle } from '~/utils';
+import { useMemo } from 'react';
 
 export default function OpenAI({
   conversation,
@@ -14,9 +15,15 @@ export default function OpenAI({
   const Menu = popover ? SelectDropDownPop : SelectDropDown;
   const modelOptions = useModelAliases(conversation?.endpoint, models);
 
+  const selectedOption = useMemo(() => {
+    if (!conversation?.model) return '';
+    const option = modelOptions.find(opt => opt.value === conversation.model);
+    return option || conversation.model;
+  }, [conversation?.model, modelOptions]);
+
   return (
     <Menu
-      value={conversation?.model ?? ''}
+      value={selectedOption}
       setValue={setOption('model')}
       availableValues={modelOptions.length > 0 ? modelOptions : models}
       showAbove={showAbove}

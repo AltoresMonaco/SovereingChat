@@ -3,6 +3,7 @@ import type { TModelSelectProps } from '~/common';
 import SelectDropDownPop from '~/components/Input/ModelSelect/SelectDropDownPop';
 import { cn, cardStyle } from '~/utils';
 import { useModelAliases } from '~/hooks/useModelAliases';
+import { useMemo } from 'react';
 
 export default function Anthropic({
   conversation,
@@ -13,10 +14,16 @@ export default function Anthropic({
 }: TModelSelectProps) {
   const Menu = popover ? SelectDropDownPop : SelectDropDown;
   const modelOptions = useModelAliases(conversation?.endpoint, models);
-  
+
+  const selectedOption = useMemo(() => {
+    if (!conversation?.model) return '';
+    const option = modelOptions.find(opt => opt.value === conversation.model);
+    return option || conversation.model;
+  }, [conversation?.model, modelOptions]);
+
   return (
     <Menu
-      value={conversation?.model ?? ''}
+      value={selectedOption}
       setValue={setOption('model')}
       availableValues={modelOptions.length > 0 ? modelOptions : models}
       showAbove={showAbove}

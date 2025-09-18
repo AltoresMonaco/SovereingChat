@@ -65,7 +65,7 @@ export default function Settings({ conversation, setOption, models, readonly }: 
         <div className="grid w-full items-center gap-2">
           <SelectDropDown
             title={localize('com_ui_model')}
-            value={model ?? ''}
+            value={model ? getModelOptions(models, conversation?.endpoint, endpointsConfig).find(opt => opt.value === model) || model : ''}
             setValue={setModel}
             availableValues={getModelOptions(models, conversation?.endpoint, endpointsConfig)}
             disabled={readonly}

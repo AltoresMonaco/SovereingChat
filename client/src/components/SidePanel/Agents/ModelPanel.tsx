@@ -15,6 +15,7 @@ import type * as t from 'librechat-data-provider';
 import type { AgentForm, AgentModelPanelProps, StringOption } from '~/common';
 import { useGetEndpointsQuery } from '~/data-provider';
 import { getEndpointField, cn, getModelOptions } from '~/utils';
+import { getModelDisplayName } from '~/utils/modelAliases';
 import { useLocalize } from '~/hooks';
 import { Panel } from '~/common';
 
@@ -191,6 +192,7 @@ export default function ModelPanel({
                 <>
                   <ControlCombobox
                     selectedValue={field.value || ''}
+                    displayValue={field.value ? getModelDisplayName(field.value, provider, endpointsConfig) : ''}
                     selectPlaceholder={
                       provider
                         ? localize('com_ui_select_model')

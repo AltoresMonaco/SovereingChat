@@ -125,7 +125,7 @@ export default function Settings({
             title={localize('com_endpoint_completion_model')}
             value={model ?? ''}
             setValue={setModel}
-            availableValues={models}
+            availableValues={models.map(m => typeof m === 'string' ? { value: m, label: m } : m)}
             disabled={readonly}
             className={cn(defaultTextProps, 'flex w-full resize-none', removeFocusRings)}
             containerClassName="flex w-full resize-none"

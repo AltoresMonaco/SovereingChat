@@ -3,6 +3,7 @@ import type { TModelSelectProps } from '~/common';
 import SelectDropDownPop from '~/components/Input/ModelSelect/SelectDropDownPop';
 import { cn, cardStyle } from '~/utils';
 import { useModelAliases } from '~/hooks/useModelAliases';
+import { useMemo } from 'react';
 
 export default function ChatGPT({
   conversation,
@@ -20,10 +21,16 @@ export default function ChatGPT({
   }
   const Menu = popover ? SelectDropDownPop : SelectDropDown;
   const modelOptions = useModelAliases(conversation?.endpoint, models);
-  
+
+  const selectedOption = useMemo(() => {
+    if (!model) return '';
+    const option = modelOptions.find(opt => opt.value === model);
+    return option || model;
+  }, [model, modelOptions]);
+
   return (
     <Menu
-      value={model ?? ''}
+      value={selectedOption}
       setValue={setOption('model')}
       availableValues={modelOptions.length > 0 ? modelOptions : models}
       showAbove={showAbove}
