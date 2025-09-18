@@ -5,7 +5,7 @@
 ### 1. Logo Monaco Cloud dans le Footer
 **Fichier modifié:** `client/src/components/Chat/Footer.tsx`
 - **Avant:** Taille du logo `h-[2.2em]`
-- **Après:** Taille réduite à `h-[1.5em]`
+- **Après:** Taille réduite à `h-[3.5em]`
 - **Résultat:** Le logo Monaco Cloud est maintenant plus discret dans le footer
 
 ### 2. Rebranding des Modèles - Configuration via librechat.yaml

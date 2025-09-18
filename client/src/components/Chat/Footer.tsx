@@ -72,7 +72,7 @@ export default function Footer({ className }: { className?: string }) {
 
           p: ({ node: _n, ...props }) => <span {...props} />,
           img: ({ node: _n, ...props }) => (
-            <img className="inline h-[1.5em] align-[-0.125em]" {...props} />
+            <img className="inline h-[3em] align-[-0.125em]" {...props} />
           ),
         }}
       >
