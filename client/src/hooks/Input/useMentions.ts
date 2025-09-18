@@ -35,20 +35,20 @@ const assistantMapFn =
     assistantMap: TAssistantsMap;
     endpointsConfig: TEndpointsConfig;
   }) =>
-  ({ id, name, description }) => ({
-    type: endpoint,
-    label: name ?? '',
-    value: id,
-    description: description ?? '',
-    icon: EndpointIcon({
-      conversation: { assistant_id: id, endpoint },
-      containerClassName: 'shadow-stroke overflow-hidden rounded-full',
-      endpointsConfig: endpointsConfig,
-      context: 'menu-item',
-      assistantMap,
-      size: 20,
-    }),
-  });
+    ({ id, name, description }) => ({
+      type: endpoint,
+      label: name ?? '',
+      value: id,
+      description: description ?? '',
+      icon: EndpointIcon({
+        conversation: { assistant_id: id, endpoint },
+        containerClassName: 'shadow-stroke overflow-hidden rounded-full',
+        endpointsConfig: endpointsConfig,
+        context: 'menu-item',
+        assistantMap,
+        size: 20,
+      }),
+    });
 
 export default function useMentions({
   assistantMap,
@@ -189,13 +189,13 @@ export default function useMentions({
       })),
       ...(interfaceConfig.modelSelect === true ? (agentsList ?? []) : []),
       ...(endpointsConfig?.[EModelEndpoint.assistants] &&
-      includeAssistants &&
-      interfaceConfig.modelSelect === true
+        includeAssistants &&
+        interfaceConfig.modelSelect === true
         ? assistantListMap[EModelEndpoint.assistants] || []
         : []),
       ...(endpointsConfig?.[EModelEndpoint.azureAssistants] &&
-      includeAssistants &&
-      interfaceConfig.modelSelect === true
+        includeAssistants &&
+        interfaceConfig.modelSelect === true
         ? assistantListMap[EModelEndpoint.azureAssistants] || []
         : []),
       ...((interfaceConfig.modelSelect === true && interfaceConfig.presets === true
@@ -204,7 +204,7 @@ export default function useMentions({
       )?.map((preset, index) => ({
         value: preset.presetId ?? `preset-${index}`,
         label: preset.title ?? preset.modelLabel ?? preset.chatGptLabel ?? '',
-        description: getPresetTitle(preset, true),
+        description: getPresetTitle(preset, true, endpointsConfig),
         icon: EndpointIcon({
           conversation: preset,
           containerClassName: 'shadow-stroke overflow-hidden rounded-full',

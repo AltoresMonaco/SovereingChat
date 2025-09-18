@@ -12,6 +12,7 @@ import {
   getIconKey,
   cn,
 } from '~/utils';
+import { getModelDisplayName } from '~/utils/modelAliases';
 import { useFileMapContext, useAgentPanelContext } from '~/Providers';
 import useAgentCapabilities from '~/hooks/Agents/useAgentCapabilities';
 import AgentCategorySelector from './AgentCategorySelector';
@@ -292,7 +293,7 @@ export default function AgentConfig({ createMutation }: Pick<AgentPanelProps, 'c
                   />
                 </div>
               )}
-              <span>{model != null && model ? model : localize('com_ui_select_model')}</span>
+              <span>{model != null && model ? getModelDisplayName(model, provider as string, endpointsConfig) : localize('com_ui_select_model')}</span>
             </div>
           </button>
         </div>
@@ -301,22 +302,22 @@ export default function AgentConfig({ createMutation }: Pick<AgentPanelProps, 'c
           artifactsEnabled ||
           ocrEnabled ||
           webSearchEnabled) && (
-          <div className="mb-4 flex w-full flex-col items-start gap-3">
-            <label className="text-token-text-primary block font-medium">
-              {localize('com_assistants_capabilities')}
-            </label>
-            {/* Code Execution */}
-            {codeEnabled && <CodeForm agent_id={agent_id} files={code_files} />}
-            {/* Web Search */}
-            {webSearchEnabled && <SearchForm />}
-            {/* File Context (OCR) */}
-            {ocrEnabled && <FileContext agent_id={agent_id} files={context_files} />}
-            {/* Artifacts */}
-            {artifactsEnabled && <Artifacts />}
-            {/* File Search */}
-            {fileSearchEnabled && <FileSearch agent_id={agent_id} files={knowledge_files} />}
-          </div>
-        )}
+            <div className="mb-4 flex w-full flex-col items-start gap-3">
+              <label className="text-token-text-primary block font-medium">
+                {localize('com_assistants_capabilities')}
+              </label>
+              {/* Code Execution */}
+              {codeEnabled && <CodeForm agent_id={agent_id} files={code_files} />}
+              {/* Web Search */}
+              {webSearchEnabled && <SearchForm />}
+              {/* File Context (OCR) */}
+              {ocrEnabled && <FileContext agent_id={agent_id} files={context_files} />}
+              {/* Artifacts */}
+              {artifactsEnabled && <Artifacts />}
+              {/* File Search */}
+              {fileSearchEnabled && <FileSearch agent_id={agent_id} files={knowledge_files} />}
+            </div>
+          )}
         {/* Agent Tools & Actions */}
         <div className="mb-4">
           <label className={labelClass}>

@@ -1,9 +1,10 @@
-import type { TPreset, TPlugin } from 'librechat-data-provider';
+import type { TPreset, TPlugin, TEndpointsConfig } from 'librechat-data-provider';
 import { EModelEndpoint } from 'librechat-data-provider';
+import { getModelDisplayName } from './modelAliases';
 
 type TEndpoints = Array<string | EModelEndpoint>;
 
-export const getPresetTitle = (preset: TPreset, mention?: boolean) => {
+export const getPresetTitle = (preset: TPreset, mention?: boolean, endpointsConfig?: TEndpointsConfig) => {
   const {
     endpoint,
     title: presetTitle,
@@ -13,7 +14,7 @@ export const getPresetTitle = (preset: TPreset, mention?: boolean) => {
     chatGptLabel,
     modelLabel,
   } = preset;
-  const modelInfo = model ?? '';
+  const modelInfo = endpointsConfig ? getModelDisplayName(model ?? '', endpoint, endpointsConfig) : (model ?? '');
   let title = '';
   let label = '';
 
@@ -34,20 +35,18 @@ export const getPresetTitle = (preset: TPreset, mention?: boolean) => {
   }
 
   if (mention === true) {
-    return `${modelInfo}${label ? ` | ${label}` : ''}${
-      promptPrefix != null && promptPrefix ? ` | ${promptPrefix}` : ''
-    }${
-      tools
+    return `${modelInfo}${label ? ` | ${label}` : ''}${promptPrefix != null && promptPrefix ? ` | ${promptPrefix}` : ''
+      }${tools
         ? ` | ${tools
-            .map((tool: TPlugin | string) => {
-              if (typeof tool === 'string') {
-                return tool;
-              }
-              return tool.pluginKey;
-            })
-            .join(', ')}`
+          .map((tool: TPlugin | string) => {
+            if (typeof tool === 'string') {
+              return tool;
+            }
+            return tool.pluginKey;
+          })
+          .join(', ')}`
         : ''
-    }`;
+      }`;
   }
 
   return `${title}${modelInfo}${label ? ` (${label})` : ''}`.trim();
