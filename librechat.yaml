@@ -35,7 +35,7 @@ interface:
   bookmarks: true
   multiConvo: true
   agents: true
-  customWelcome: "Salut {{user.name}}! Bienvenue sur Altores Sovereign Intelligence!"
+  customWelcome: "Bonjour et bienvenue sur Altores Sovereign Intelligence!"
   runCode: false
   webSearch: false
   fileSearch: true

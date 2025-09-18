@@ -37,8 +37,19 @@ function DynamicDropdown({
       return inputValue;
     }
 
-    return conversation?.[settingKey] ?? defaultValue;
-  }, [conversation, defaultValue, optionType, settingKey, inputValue]);
+    const value = conversation?.[settingKey] ?? defaultValue;
+    // If we have options and the value is a string, find the matching option to get the label
+    if (options && typeof value === 'string') {
+      const option = options.find((opt) =>
+        typeof opt === 'string' ? opt === value : opt.value === value
+      );
+      if (option && typeof option === 'object') {
+        return option;
+      }
+    }
+
+    return value;
+  }, [conversation, defaultValue, optionType, settingKey, inputValue, options]);
 
   const handleChange = (value: string) => {
     if (optionType === OptionTypes.Custom) {

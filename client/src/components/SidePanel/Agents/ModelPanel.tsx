@@ -141,7 +141,7 @@ export default function ModelPanel({
                   : ((field.value as StringOption)?.value ?? '');
               const display =
                 typeof field.value === 'string'
-                  ? field.value
+                  ? (getEndpointField(endpointsConfig as any, field.value, 'displayLabel') as string | undefined) ?? field.value
                   : ((field.value as StringOption)?.label ?? '');
 
               return (
