@@ -10,11 +10,13 @@ export function getModelOptions(
         return [];
     }
 
+    // Get model names from the configuration (librechat.yaml)
     const modelNames = (endpoint && endpointsConfig?.[endpoint]?.modelNames) as
         | Record<string, string>
         | undefined;
 
     return models.map((model): Option => {
+        // Use the name from configuration if available, otherwise use the model ID
         const displayName = modelNames?.[model] ?? model;
         return {
             value: model,
@@ -32,9 +34,11 @@ export function getModelDisplayName(
         return model;
     }
 
+    // Get model names from the configuration (librechat.yaml)
     const modelNames = endpointsConfig?.[endpoint]?.modelNames as
         | Record<string, string>
         | undefined;
 
+    // Use the name from configuration if available, otherwise use the model ID
     return modelNames?.[model] ?? model;
 }
